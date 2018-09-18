@@ -2,6 +2,7 @@ import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
+from flask_login import UserMixin
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@127.0.0.1/bslim?host=127.0.0.1?port=3306')
@@ -10,12 +11,13 @@ Session = scoped_session(sessionmaker(bind=conn))
 
 Base = declarative_base()
 
-class Person(Base):
+class Person(Base,UserMixin):
     __tablename__ = 'person'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
     firstname = sqla.Column('firstname', sqla.VARCHAR(64))
     lastname = sqla.Column('lastname', sqla.VARCHAR(64))
     email = sqla.Column('email', sqla.VARCHAR(64), unique=True)
+    password = sqla.Column('password', sqla.VARCHAR(64))
     points = sqla.Column('points',sqla.Integer)
     clearance = sqla.Column('clearance',sqla.Integer)
 
@@ -45,6 +47,33 @@ class Particepant(Base):
 
 
 class Persister():
-    pass
+
+    def getPerson(self, id):
+        db = Session()
+        try:
+            user = db.query(Person).filter(Person.id == id).first()
+            db.close()
+            return user
+        except:
+            db.rollback()
+            db.close()
+
+    def getEmail(self,email):
+        db = Session()
+        user = db.query(Person).filter(Person.email == email).first()
+        db.close()
+        return user
+
+    def getPassword(self, password):
+        db = Session()
+        user = db.query(Person).filter(Person.password == password).first()
+        db.close()
+        return user
+
+    def getUserWithEmail(self,email):
+        db = Session()
+        user = db.query(Person).filter(Person.email == email).first()
+        db.close()
+
 
 Base.metadata.create_all(conn)
