@@ -1,7 +1,7 @@
 from flask_login import LoginManager, current_user, login_required, logout_user
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file, make_response, session
 import os
-import UserApi, LoginForm, eventApi
+import UserApi, LoginForm, eventApi,RegisterForm
 import sys
 
 app = Flask(__name__)
@@ -53,4 +53,8 @@ def eventScanned():
     if eventApi.isScanned(eventId, personId):
         return jsonify(False)
     else:
-        eventApi.eventScanned(eventId,personId)
+        return eventApi.eventScanned(eventId,personId)
+
+@app.route('/register', methods=['POST'])
+def registerHandler():
+    return RegisterForm.registerSubmit(request.args)
