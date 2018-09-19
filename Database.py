@@ -89,10 +89,13 @@ class Persister():
         return True
 
     # Check if QR code is already scanned
-    def isScanned(self,eventId):
+    def isScanned(self,eventId,personId):
         db = Session()
-        event = db.query(Particepant).filter(Particepant.event_id == eventId).first()
-        if event != None:
+        particepant = db.query(Particepant).filter(Particepant.event_id == eventId) \
+            .filter(Particepant.person_id == personId)\
+            .first()
+
+        if particepant.event_scanned == None:
             return True
         else:
             return False
