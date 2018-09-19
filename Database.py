@@ -114,5 +114,13 @@ class Persister():
         db.close()
         return 200
 
+    def checkEmailExistance(self, email):
+        db = Session()
+        if db.query(Person).filter(Person.email == email).count():
+            db.close()
+            return True
+        db.close()
+        return False
+
 
 Base.metadata.create_all(conn)
