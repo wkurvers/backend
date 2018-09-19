@@ -1,5 +1,6 @@
 import sqlalchemy as sqla
 from flask import jsonify
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -121,6 +122,17 @@ class Persister():
             return True
         db.close()
         return False
+
+    def savePassword(self,password, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+
+        person.password = pbkdf2_sha256.hash(password)
+
+        db.commit()
+        db.close()
+        return 200
+
 
 
 Base.metadata.create_all(conn)
