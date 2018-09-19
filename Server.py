@@ -1,7 +1,7 @@
 from flask_login import LoginManager, current_user, login_required, logout_user
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file, make_response, session
 import os
-import UserApi, LoginForm
+import UserApi, LoginForm, eventApi
 import sys
 
 app = Flask(__name__)
@@ -45,3 +45,12 @@ def logout():
         return redirect('/')
     else:
         return redirect('/login')
+
+@app.route('/api/qrEvent', method=['GET'])
+def eventScanned():
+    eventId = request.args.get('eventId', None)
+    personId = request.args.get('personId', None)
+    if eventApi.isScanned(eventId):
+        return jsonify(False)
+    else:
+        eventApi.eventScanned(eventId,personId)
