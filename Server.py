@@ -50,7 +50,7 @@ def logout():
 def eventScanned():
     eventId = request.args.get('eventId', None)
     personId = request.args.get('personId', None)
-    if eventApi.isScanned(eventId):
+    if eventApi.isScanned(eventId, personId):
         return jsonify(False)
     else:
         eventApi.eventScanned(eventId,personId)
