@@ -46,7 +46,7 @@ class Particepant(Base):
     __tablename__ = 'particepant'
     person_id = sqla.Column('person_id',sqla.Integer,sqla.ForeignKey('person.id'), primary_key=True)
     event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
-    event_scanned = sqla.Column('event_scanned',sqla.Integer)
+    event_scanned = sqla.Column('event_scanned',sqla.Boolean)
 
 
 class Persister():
@@ -93,7 +93,8 @@ class Persister():
     # Check if QR code is already scanned
     def isScanned(self,eventId,personId):
         db = Session()
-        particepant = db.query(Particepant).filter(Particepant.event_id == eventId) \
+        particepant = db.query(Particepant)\
+            .filter(Particepant.event_id == eventId) \
             .filter(Particepant.person_id == personId)\
             .first()
 
