@@ -2,9 +2,6 @@ import sys, UserApi
 from flask_login import login_user
 from passlib.hash import pbkdf2_sha256
 
-
-
-
 def loginUser(form):
     emailLogin = form.get('email')
     password_candidate = form.get('password')

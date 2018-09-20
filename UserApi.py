@@ -7,13 +7,17 @@ def getUserByEmail(emailLogin):
     return Persister.getUserWithEmail(emailLogin)
 
 def getEmail(emailLogin):
-    Persister.getEmail(emailLogin)
+    return Persister.getEmail(emailLogin)
 
-def getPassword(password):
-    Persister.getPassword(password)
+def getPassword(email):
+    return Persister.getPassword(email)
+
 
 def saveNewPassword(temp,email):
     if Persister.checkEmailExistance(email):
         return Persister.savePassword(temp,email)
     else:
         return 400
+
+def checkPoints():
+    pass
