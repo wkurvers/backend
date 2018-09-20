@@ -53,7 +53,8 @@ def logout():
     else:
         return redirect('/login')
 
-@app.route('/api/qrEvent', methods=['GET'])
+
+@app.route('/api/qrEvent', methods=['GET','POST'])
 def eventScanned():
     eventId = request.args.get('eventId', None)
     personId = request.args.get('personId', None)
@@ -102,6 +103,31 @@ def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
     UserApi.saveNewPassword(temp,email)
     return temp
 
+@app.route('/api/changePassword', methods=['GET'])
+def changePassword():
+    #controleer oude wachtwoord als klopt update naar nieuw wachtwoord
+    pass
+
 @app.route('/api/checkPoints', methods=['GET'])
 def checkPoints():
-    return UserApi.checkPoints()
+    email = current_user.email
+    return UserApi.checkPoints(email)
+
+@app.route('/api/addPoint', methods=['GET'])
+def addPoint():
+    email = current_user.email
+    return UserApi.addPoints(email)
+
+@app.route('/api/substractPoint', methods=['GET'])
+def substractPoint():
+    email = current_user.email
+    return UserApi.substractPoint(email)
+
+@app.route('/api/resetStampCard', methods=['GET'])
+def resetStampCard():
+    email = current_user.email
+    return UserApi.resetStampCard(email)
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True)
