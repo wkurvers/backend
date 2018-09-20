@@ -67,9 +67,9 @@ class Persister():
         db.close()
         return user
 
-    def getPassword(self, password):
+    def getPassword(self, email):
         db = Session()
-        user = db.query(Person).filter(Person.password == password).first()
+        user = db.query(Person.password).filter(Person.email == email).first()
         db.close()
         return user
 
@@ -77,6 +77,7 @@ class Persister():
         db = Session()
         user = db.query(Person).filter(Person.email == email).first()
         db.close()
+        return user
 
     def persist_object(self, obj):
         db = Session()

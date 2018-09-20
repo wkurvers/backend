@@ -30,9 +30,8 @@ def loginPageHandler():
 # check if user is loggedin using current_user from flask.
 @app.route('/api/loginCheck', methods=['GET'])
 def loginCheck():
-    check = current_user.is_authenticated
-    if check:
-        print(current_user.username, file=sys.stderr)
+    if current_user.is_authenticated:
+        #print(current_user.username, file=sys.stderr)
         return jsonify({"username": current_user.username})
     else:
         return jsonify(False)
@@ -64,3 +63,7 @@ def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
     temp =  ''.join(random.choice(chars) for _ in range(size))
     UserApi.saveNewPassword(temp,email)
     return temp
+
+@app.route('/api/checkPoints', methods=['GET'])
+def checkPoints():
+    return UserApi.checkPoints()
