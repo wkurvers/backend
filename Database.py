@@ -1,5 +1,6 @@
 import sqlalchemy as sqla
 from flask import jsonify
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -45,7 +46,7 @@ class Particepant(Base):
     __tablename__ = 'particepant'
     person_id = sqla.Column('person_id',sqla.Integer,sqla.ForeignKey('person.id'), primary_key=True)
     event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
-    event_scanned = sqla.Column('event_scanned',sqla.Integer)
+    event_scanned = sqla.Column('event_scanned',sqla.Boolean)
 
 
 class Persister():
@@ -66,9 +67,9 @@ class Persister():
         db.close()
         return user
 
-    def getPassword(self, password):
+    def getPassword(self, email):
         db = Session()
-        user = db.query(Person).filter(Person.password == password).first()
+        user = db.query(Person.password).filter(Person.email == email).first()
         db.close()
         return user
 
@@ -76,6 +77,7 @@ class Persister():
         db = Session()
         user = db.query(Person).filter(Person.email == email).first()
         db.close()
+        return user
 
     def persist_object(self, obj):
         db = Session()
@@ -91,7 +93,8 @@ class Persister():
     # Check if QR code is already scanned
     def isScanned(self,eventId,personId):
         db = Session()
-        particepant = db.query(Particepant).filter(Particepant.event_id == eventId) \
+        particepant = db.query(Particepant)\
+            .filter(Particepant.event_id == eventId) \
             .filter(Particepant.person_id == personId)\
             .first()
 
@@ -113,6 +116,25 @@ class Persister():
         db.commit()
         db.close()
         return 200
+
+    def checkEmailExistance(self, email):
+        db = Session()
+        if db.query(Person).filter(Person.email == email).count():
+            db.close()
+            return True
+        db.close()
+        return False
+
+    def savePassword(self,password, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+
+        person.password = pbkdf2_sha256.hash(password)
+
+        db.commit()
+        db.close()
+        return 200
+
 
 
 Base.metadata.create_all(conn)

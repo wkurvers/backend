@@ -1,7 +1,7 @@
 from flask_login import LoginManager, current_user, login_required, logout_user
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file, make_response, session
 import os
-#import UserApi, LoginForm, eventApi
+import UserApi, LoginForm, eventApi
 import sys
 import smtplib
 from email.message import EmailMessage
@@ -9,6 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
 
+import UserApi, LoginForm, eventApi,RegisterForm
+import sys, string, os, random
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -37,9 +39,8 @@ def loginPageHandler():
 # check if user is loggedin using current_user from flask.
 @app.route('/api/loginCheck', methods=['GET'])
 def loginCheck():
-    check = current_user.is_authenticated
-    if check:
-        print(current_user.username, file=sys.stderr)
+    if current_user.is_authenticated:
+        #print(current_user.username, file=sys.stderr)
         return jsonify({"username": current_user.username})
     else:
         return jsonify(False)
@@ -89,3 +90,18 @@ def resetPassword():
 		server.quit()
 
 	return " "
+
+@app.route('/register', methods=['POST'])
+def registerHandler():
+    return RegisterForm.registerSubmit(request.args)
+
+@app.route('/api/passRecovery', methods=['GET'])
+def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
+    email = request.args.get('email',None)
+    temp =  ''.join(random.choice(chars) for _ in range(size))
+    UserApi.saveNewPassword(temp,email)
+    return temp
+
+@app.route('/api/checkPoints', methods=['GET'])
+def checkPoints():
+    return UserApi.checkPoints()
