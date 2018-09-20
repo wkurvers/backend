@@ -135,6 +135,49 @@ class Persister():
         db.close()
         return 200
 
+    def changePassword(self,email):
+        pass
+
+    def checkPoints(self,email):
+        db = Session()
+        points = db.query(Person.points).filter(Person.email == email).first()
+        return points
+
+    def addPoints(self, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+
+        person.points = person.points + 1
+        db.commit()
+        db.close()
+        return 200
+
+    def substractPoint(self, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+
+        if person.points <= 0:
+            db.commit()
+            db.close()
+            return 400
+        else:
+            person.points = person.points - 1
+            db.commit()
+            db.close()
+            return 200
+
+    def resetStampCard(self, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+
+        if person.points >= 15:
+            person.points = 0
+
+            db.commit()
+            db.close()
+            return 200
+
+
 
 
 Base.metadata.create_all(conn)
