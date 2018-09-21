@@ -8,7 +8,7 @@ from flask_login import UserMixin
 import checks
 
 
-conn = sqla.create_engine('mysql+pymysql://root:@127.0.0.1/bslim?host=127.0.0.1?port=3306')
+conn = sqla.create_engine('mysql+pymysql://root:adminPi@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 

@@ -92,6 +92,22 @@ def resetStampCard():
     return UserApi.resetStampCard(email)
 
 ################################################################
+# news
+################################################################
+
+app.route('/api/createEvent', methods=['POST'])
+def createEvent(name,begin,end,location,description,leader,img):
+    return eventApi.createEvent(name,begin,end,location,description,leader,img)
+
+################################################################
+# events
+################################################################
+
+app.route('/api/createNews', methods=['POST'])
+def createNews(emtpy):
+    return None
+
+################################################################
 # miscellaneous
 ################################################################
 
