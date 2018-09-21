@@ -18,6 +18,11 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+
+################################################################
+# login/logout
+################################################################
+
 #check if user is loggedin if not try to log user in.
 # return 0/1 for counselor, true is for showing login or logout in menu.
 @app.route('/login', methods=['POST'])
@@ -44,18 +49,10 @@ def logout():
     else:
         return redirect('/login')
 
-@app.route('/api/qrEvent', methods=['GET','POST'])
-def eventScanned():
-    eventId = request.args.get('eventId', None)
-    personId = request.args.get('personId', None)
-    if eventApi.isScanned(eventId, personId):
-        return jsonify(False)
-    else:
-        return eventApi.eventScanned(eventId,personId)
 
-@app.route('/register', methods=['POST'])
-def registerHandler():
-    return RegisterForm.registerSubmit(request.args)
+################################################################
+# password
+################################################################
 
 @app.route('/api/passRecovery', methods=['GET'])
 def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
@@ -69,6 +66,10 @@ def changePassword():
     newPassword = request.args.get('password',None)
     email = current_user.email
     return UserApi.changePassword(email,newPassword)
+
+################################################################
+# points and stampcard
+################################################################
 
 @app.route('/api/checkPoints', methods=['GET'])
 def checkPoints():
@@ -89,6 +90,23 @@ def substractPoint():
 def resetStampCard():
     email = current_user.email
     return UserApi.resetStampCard(email)
+
+################################################################
+# miscellaneous
+################################################################
+
+@app.route('/api/qrEvent', methods=['GET','POST'])
+def eventScanned():
+    eventId = request.args.get('eventId', None)
+    personId = request.args.get('personId', None)
+    if eventApi.isScanned(eventId, personId):
+        return jsonify(False)
+    else:
+        return eventApi.eventScanned(eventId,personId)
+
+@app.route('/register', methods=['POST'])
+def registerHandler():
+    return RegisterForm.registerSubmit(request.args)
 
 
 if __name__ == "__main__":
