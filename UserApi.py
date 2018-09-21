@@ -19,6 +19,9 @@ def saveNewPassword(temp,email):
     else:
         return 400
 
+def changePassword(email, newPassword):
+    return Persister.changePassword(email, newPassword)
+
 def checkPoints(email):
     return Persister.checkPoints(email)
 
@@ -32,3 +35,5 @@ def substractPoint(email):
 
 def resetStampCard(email):
     return Persister.resetStampCard(email)
+
+

@@ -66,8 +66,9 @@ def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
 
 @app.route('/api/changePassword', methods=['GET'])
 def changePassword():
-    #controleer oude wachtwoord als klopt update naar nieuw wachtwoord
-    pass
+    newPassword = request.args.get('password',None)
+    email = current_user.email
+    return UserApi.changePassword(email,newPassword)
 
 @app.route('/api/checkPoints', methods=['GET'])
 def checkPoints():
