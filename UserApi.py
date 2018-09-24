@@ -15,7 +15,7 @@ def getPassword(email):
 
 def saveNewPassword(temp,email):
     if Persister.checkEmailExistance(email):
-        return Persister.savePassword(temp,email)
+        return Persister.savePasswordHashed(temp,email)
     else:
         return 400
 

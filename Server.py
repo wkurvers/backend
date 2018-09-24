@@ -39,14 +39,17 @@ def loginPageHandler():
     if current_user.is_authenticated:
         return 400
     else:
-        return jsonify({'value': True, 'clearance': current_user.clearance}),LoginForm.loginUser(request.args)
+        user = LoginForm.loginUser(request.get_json())
+        if(user != False):
+            return jsonify({'value': True, 'clearance': user.clearance})
+        else:
+            return jsonify(400)
 
 # check if user is loggedin using current_user from flask.
 @app.route('/api/loginCheck', methods=['GET'])
 def loginCheck():
     if current_user.is_authenticated:
-        #print(current_user.username, file=sys.stderr)
-        return jsonify({"username": current_user.username})
+        return jsonify({"email": current_user.email})
     else:
         return jsonify(False)
 
@@ -58,48 +61,36 @@ def logout():
     else:
         return redirect('/login')
 
-      
-@app.route('/api/qrEvent', methods=['GET','POST'])
-def eventScanned():
-    eventId = request.args.get('eventId', None)
-    personId = request.args.get('personId', None)
-    if eventApi.isScanned(eventId, personId):
-        return jsonify(False)
-    else:
-        return eventApi.eventScanned(eventId,personId)
-
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
-	if(request.method == "POST"):
-		data = json.loads(request.data)
-		email = data['email']
+    if(request.method == "POST"):
+        data = json.loads(request.data)
+        email = data['email']
+        newPass = getNewPassword(email)
 
-		# create message object instance
-		msg = MIMEMultipart()
+        # create message object instance
+        msg = MIMEMultipart()
 
+        message = "You're password has been reset. Your new password is: " + newPass + ". Please change you're password after you've logged in."
 
-		message = "You're password has been reset. Your new password is: <ww>. Please change you're password after you've loggedin."
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = email
+        msg['Subject'] = "Password reset"
 
-		# setup the parameters of the message
-		msg['From'] = "bslim@grombouts.nl"
-		msg['To'] = email
-		msg['Subject'] = "Password reset"
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
 
-		# add in the message body
-		msg.attach(MIMEText(message, 'plain'))
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', email,  msg.as_string())
+        server.quit()
+    return " "
 
-		# Send the message via our own SMTP server.
-		server = smtplib.SMTP('mail.grombouts.nl', 587)
-		server.starttls()
-		server.login('bslim@grombouts.nl', "bslim")
-		server.sendmail('bslim@grombouts.nl', email,  msg.as_string())
-		server.quit()
-
-	return " "
-
-@app.route('/api/passRecovery', methods=['GET'])
-def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
-    email = request.args.get('email',None)
+def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
+    email = email
     temp =  ''.join(random.choice(chars) for _ in range(size))
     UserApi.saveNewPassword(temp,email)
     return temp
@@ -117,22 +108,22 @@ def changePassword():
 @app.route('/api/checkPoints', methods=['GET'])
 def checkPoints():
     email = current_user.email
-    return UserApi.checkPoints(email)
+    return jsonify({"points": UserApi.checkPoints(email)})
 
 @app.route('/api/addPoint', methods=['GET'])
 def addPoint():
     email = current_user.email
-    return UserApi.addPoints(email)
+    return jsonify({"responseCode": UserApi.addPoints(email)})
 
 @app.route('/api/substractPoint', methods=['GET'])
 def substractPoint():
     email = current_user.email
-    return UserApi.substractPoint(email)
+    return jsonify({"responseCode": UserApi.substractPoint(email)})
 
 @app.route('/api/resetStampCard', methods=['GET'])
 def resetStampCard():
     email = current_user.email
-    return UserApi.resetStampCard(email)
+    return jsonify({"responseCode": UserApi.resetStampCard(email)})
 
 ################################################################
 # news
@@ -154,10 +145,11 @@ def createNews(emtpy):
 # miscellaneous
 ################################################################
 
-@app.route('/api/qrEvent', methods=['GET','POST'])
+@app.route('/api/qrEvent', methods=['POST'])
 def eventScanned():
-    eventId = request.args.get('eventId', None)
-    personId = request.args.get('personId', None)
+    data = request.get_json()
+    eventId = data.get('eventId')
+    personId = data.get('personId')
     if eventApi.isScanned(eventId, personId):
         return jsonify(False)
     else:
@@ -165,7 +157,7 @@ def eventScanned():
 
 @app.route('/register', methods=['POST'])
 def registerHandler():
-    return RegisterForm.registerSubmit(request.get_json())
+    return jsonify(RegisterForm.registerSubmit(request.get_json()))
 
 
 if __name__ == "__main__":

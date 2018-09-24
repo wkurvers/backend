@@ -58,14 +58,13 @@ def registerSubmit(form):
         }), 400, {'ContentType': 'application/json'}
 
     person = Person(
-        firstName=firstName,
-        lastName=lastName,
+        firstname=firstName,
+        lastname=lastName,
         email=email,
         password=pbkdf2_sha256.hash(password),
         points= 0,
         clearance= 0,
         license = True
-
     )
 
-    Persister.persist_object(person)
+    return Persister.persist_object(person)
