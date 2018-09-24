@@ -118,7 +118,7 @@ class Persister():
                                            .filter(Particepant.event_id == eventId)\
                                            .first()
                     return particepant.event_scanned
-        return False
+        return 400
 
     def updateParticepantInfo(event_id, person_id):
         db = Session()
@@ -133,7 +133,7 @@ class Persister():
 
         db.commit()
         db.close()
-        return "200"
+        return 200
 
     def checkEmailExistance(email):
         db = Session()

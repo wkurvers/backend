@@ -154,7 +154,8 @@ def eventScanned():
     if eventApi.isScanned(eventId, personId):
         return jsonify(False)
     else:
-        return eventApi.eventScanned(eventId,personId)
+        responseCode = eventApi.eventScanned(eventId,personId)
+        return jsonify({"responseCode": responseCode})
 
 @app.route('/register', methods=['POST'])
 def registerHandler():
