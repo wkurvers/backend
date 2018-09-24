@@ -95,36 +95,47 @@ class Persister():
     # Check if QR code is already scanned
     def isScanned(eventId,personId):
         db = Session()
-        particepant = db.query(Particepant).filter(Particepant.person_id == int(personId))\
-                                           .filter(Particepant.event_id == int(eventId))\
+        particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
+                                           .filter(Particepant.event_id == eventId)\
                                            .first()
         db.close()
-        if(particepant == None):
-            return False
-        return particepant.event_scanned
+        if particepant == None:
+            print("Particepant not existing")
+            if(db.query(Event).filter(Event.id == eventId).count()):
+                print("event exists")
+                if(db.query(Person).filter(Person.id == personId).count()):
+                    print("person exists")
+                    db = Session()
+                    newParticepant = Particepant(
+                        person_id=personId,
+                        event_id=eventId,
+                        event_scanned=0
+                    )
+                    db.add(newParticepant)
+                    db.commit()
+                    db.close()
+                    particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
+                                           .filter(Particepant.event_id == eventId)\
+                                           .first()
+                    return particepant.event_scanned
+        return False
 
     def updateParticepantInfo(event_id, person_id):
         db = Session()
-        print(event_id)
-        print(person_id)
-        particepant = db.query(Particepant).filter(Particepant.person_id == int(6))\
-                                           .filter(Particepant.event_id == int(1))\
+        particepant = db.query(Particepant).filter(Particepant.person_id == person_id)\
+                                           .filter(Particepant.event_id == event_id)\
                                            .first()
 
-        print(particepant)
-        particepant.event_scanned = True
-        db.commit()
-
-        person = db.query(Person).filter(Person.id == 1)
-        print(person)
+        person = db.query(Person).filter(Person.id == person_id).first()
         person.points = person.points + 1
+
+        particepant.event_scanned = True
 
         db.commit()
         db.close()
-        return 200
+        return "200"
 
     def checkEmailExistance(email):
-        print(email)
         db = Session()
         if db.query(Person).filter(Person.email == email).count():
             db.close()
