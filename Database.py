@@ -23,6 +23,7 @@ class Person(Base,UserMixin):
     password = sqla.Column('password', sqla.VARCHAR(64))
     points = sqla.Column('points',sqla.Integer)
     clearance = sqla.Column('clearance',sqla.Integer)
+    license = sqla.Column('license',sqla.Boolean)
 
 class Event(Base):
     __tablename__ = 'event'
