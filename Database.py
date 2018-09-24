@@ -5,9 +5,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
 from flask_login import UserMixin
+import checks
 
 
-conn = sqla.create_engine('mysql+pymysql://root:@127.0.0.1/bslim?host=127.0.0.1?port=3306')
+conn = sqla.create_engine('mysql+pymysql://root:adminPi@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -69,9 +70,9 @@ class Persister():
 
     def getPassword(self, email):
         db = Session()
-        user = db.query(Person.password).filter(Person.email == email).first()
+        password = db.query(Person.password).filter(Person.email == email).first()
         db.close()
-        return user
+        return password
 
     def getUserWithEmail(self,email):
         db = Session()
@@ -135,8 +136,20 @@ class Persister():
         db.close()
         return 200
 
-    def changePassword(self,email):
-        pass
+    def changePassword(self, email, newPassword):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
+        hashedNewPassword = pbkdf2_sha256.hash(newPassword)
+
+        if checks.emptyCheck([newPassword]) or newPassword < 5 or person.password == hashedNewPassword:
+            return 400
+        else:
+            person.password = hashedNewPassword
+
+            db.commit()
+            db.close()
+            return 200
+
 
     def checkPoints(self,email):
         db = Session()

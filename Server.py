@@ -27,6 +27,11 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+
+################################################################
+# login/logout
+################################################################
+
 #check if user is loggedin if not try to log user in.
 # return 0/1 for counselor, true is for showing login or logout in menu.
 @app.route('/login', methods=['POST'])
@@ -53,7 +58,7 @@ def logout():
     else:
         return redirect('/login')
 
-
+      
 @app.route('/api/qrEvent', methods=['GET','POST'])
 def eventScanned():
     eventId = request.args.get('eventId', None)
@@ -96,6 +101,7 @@ def resetPassword():
 def registerHandler():
     return RegisterForm.registerSubmit(request.args)
 
+
 @app.route('/api/passRecovery', methods=['GET'])
 def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
     email = request.args.get('email',None)
@@ -105,8 +111,13 @@ def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
 
 @app.route('/api/changePassword', methods=['GET'])
 def changePassword():
-    #controleer oude wachtwoord als klopt update naar nieuw wachtwoord
-    pass
+    newPassword = request.args.get('password',None)
+    email = current_user.email
+    return UserApi.changePassword(email,newPassword)
+
+################################################################
+# points and stampcard
+################################################################
 
 @app.route('/api/checkPoints', methods=['GET'])
 def checkPoints():
@@ -127,6 +138,39 @@ def substractPoint():
 def resetStampCard():
     email = current_user.email
     return UserApi.resetStampCard(email)
+
+################################################################
+# news
+################################################################
+
+app.route('/api/createEvent', methods=['POST'])
+def createEvent(name,begin,end,location,description,leader,img):
+    return eventApi.createEvent(name,begin,end,location,description,leader,img)
+
+################################################################
+# events
+################################################################
+
+app.route('/api/createNews', methods=['POST'])
+def createNews(emtpy):
+    return None
+
+################################################################
+# miscellaneous
+################################################################
+
+@app.route('/api/qrEvent', methods=['GET','POST'])
+def eventScanned():
+    eventId = request.args.get('eventId', None)
+    personId = request.args.get('personId', None)
+    if eventApi.isScanned(eventId, personId):
+        return jsonify(False)
+    else:
+        return eventApi.eventScanned(eventId,personId)
+
+@app.route('/register', methods=['POST'])
+def registerHandler():
+    return RegisterForm.registerSubmit(request.args)
 
 
 if __name__ == "__main__":
