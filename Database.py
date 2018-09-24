@@ -8,7 +8,7 @@ from flask_login import UserMixin
 import checks
 
 
-conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
+conn = sqla.create_engine('mysql+pymysql://root:adminPi@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -130,7 +130,6 @@ class Persister():
         person.points = person.points + 1
 
         particepant.event_scanned = True
-
         db.commit()
         db.close()
         return 200
@@ -142,7 +141,7 @@ class Persister():
             return True
         db.close()
         return False
-
+      
     def savePassword(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
