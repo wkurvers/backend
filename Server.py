@@ -170,7 +170,7 @@ def eventScanned():
 
 @app.route('/register', methods=['POST'])
 def registerHandler():
-    return RegisterForm.registerSubmit(request.args)
+    return RegisterForm.registerSubmit(request.get_json())
 
 
 if __name__ == "__main__":
