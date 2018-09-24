@@ -97,11 +97,6 @@ def resetPassword():
 
 	return " "
 
-@app.route('/register', methods=['POST'])
-def registerHandler():
-    return RegisterForm.registerSubmit(request.args)
-
-
 @app.route('/api/passRecovery', methods=['GET'])
 def getNewPassword(size=6, chars=string.ascii_uppercase + string.digits):
     email = request.args.get('email',None)
