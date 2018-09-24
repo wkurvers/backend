@@ -8,7 +8,7 @@ from flask_login import UserMixin
 import checks
 
 
-conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
+conn = sqla.create_engine('mysql+pymysql://root:adminPi@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -118,20 +118,18 @@ class Persister():
         person = db.query(Person).filter(Person.id == 1)
         print(person)
         person.points = person.points + 1
-
         db.commit()
         db.close()
         return 200
 
     def checkEmailExistance(email):
-        print(email)
         db = Session()
         if db.query(Person).filter(Person.email == email).count():
             db.close()
             return True
         db.close()
         return False
-
+      
     def savePassword(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()

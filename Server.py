@@ -49,7 +49,6 @@ def loginPageHandler():
 @app.route('/api/loginCheck', methods=['GET'])
 def loginCheck():
     if current_user.is_authenticated:
-        #print(current_user.username, file=sys.stderr)
         return jsonify({"email": current_user.email})
     else:
         return jsonify(False)
@@ -162,4 +161,4 @@ def registerHandler():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
