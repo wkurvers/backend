@@ -51,15 +51,15 @@ def loginCheck():
     if current_user.is_authenticated:
         return jsonify({"value": True, "email": current_user.email})
     else:
-        return jsonify("value": False "email": None)
+        return jsonify({"value": False "email": None})
 
-@app.route('/logout')
+@app.route('/logout', methods=['GET'])
 def logout():
     if current_user.is_authenticated:
         logout_user()
-        return redirect('/')
+        return jsonify({"value": True})
     else:
-        return redirect('/login')
+        return jsonify({"value": False})
 
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
