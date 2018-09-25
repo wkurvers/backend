@@ -43,7 +43,7 @@ def loginPageHandler():
         if(user != False):
             return jsonify({'value': True, 'clearance': user.clearance, 'userId': user.id})
         else:
-            return jsonify(400)
+            return jsonify({'value': False, 'clearance': None, 'userId': None})
 
 # check if user is loggedin using current_user from flask.
 @app.route('/api/loginCheck', methods=['GET'])
