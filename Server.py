@@ -46,20 +46,14 @@ def loginPageHandler():
             return jsonify({'value': False, 'clearance': None, 'userId': None})
 
 # check if user is loggedin using current_user from flask.
-@app.route('/api/loginCheck', methods=['GET'])
+@app.route('/api/loginCheck', methods=['POST'])
 def loginCheck():
-    if current_user.is_authenticated:
-        return jsonify({"value": True, "email": current_user.email})
-    else:
-        return jsonify({"value": False, "email": None})
+    return LoginForm.loginCheck(request.get_json())
 
-@app.route('/logout', methods=['GET'])
+@app.route('/logout', methods=['POST'])
 def logout():
-    if current_user.is_authenticated:
-        logout_user()
-        return jsonify({"value": True})
-    else:
-        return jsonify({"value": False})
+    data = request.get_json()
+    return jsonify({"value": LoginForm.logoutUser(data)})
 
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
@@ -153,17 +147,19 @@ def createNews(emtpy):
 # miscellaneous
 ################################################################
 
+# Is called to add points to the user account when an event is scannend
 @app.route('/api/qrEvent', methods=['POST'])
 def eventScanned():
     data = request.get_json()
     eventId = data.get('eventId')
     personId = data.get('personId')
-    if eventApi.isScanned(eventId, personId):
+    if eventApi.isScanned(eventId, personId) == 400:
         return jsonify({"responseCode": "400"})
     else:
         responseCode = eventApi.eventScanned(eventId,personId)
         return jsonify({"responseCode": responseCode})
 
+# Is called to get the id from an event when giving a qrCode, returns 200 when succesfull and 400 when not
 @app.route('/api/eventByCode', methods=['POST'])
 def findEvent():
     data = request.get_json()
@@ -173,11 +169,11 @@ def findEvent():
         return jsonify({"responseCode": "200", "eventId": result.id})
     return jsonify({"responseCode": "400", "eventId": None})
 
-
+# Is called to register a new user
 @app.route('/register', methods=['POST'])
 def registerHandler():
     return jsonify(RegisterForm.registerSubmit(request.get_json()))
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
