@@ -37,7 +37,7 @@ def route(path):
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return 400
+        return jsonify({'value': False, 'clearance': None, 'userId': None})
     else:
         user = LoginForm.loginUser(request.get_json())
         if(user != False):
@@ -49,9 +49,9 @@ def loginPageHandler():
 @app.route('/api/loginCheck', methods=['GET'])
 def loginCheck():
     if current_user.is_authenticated:
-        return jsonify({"email": current_user.email})
+        return jsonify({"value": True, "email": current_user.email})
     else:
-        return jsonify(False)
+        return jsonify("value": False "email": None)
 
 @app.route('/logout')
 def logout():
@@ -159,7 +159,7 @@ def eventScanned():
     eventId = data.get('eventId')
     personId = data.get('personId')
     if eventApi.isScanned(eventId, personId):
-        return jsonify(False)
+        return jsonify({"responseCode": "400"})
     else:
         responseCode = eventApi.eventScanned(eventId,personId)
         return jsonify({"responseCode": responseCode})
