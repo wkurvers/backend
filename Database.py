@@ -53,7 +53,7 @@ class Particepant(Base):
 
 class Persister():
 
-    def getPerson(self, id):
+    def getPerson(id):
         db = Session()
         try:
             user = db.query(Person).filter(Person.id == id).first()
@@ -63,71 +63,96 @@ class Persister():
             db.rollback()
             db.close()
 
-    def getEmail(self,email):
+    def getEmail(email):
         db = Session()
-        user = db.query(Person).filter(Person.email == email).first()
+        user = db.query(Person.email).filter(Person.email == email).first()
         db.close()
         return user
 
-    def getPassword(self, email):
+    def getPassword(email):
         db = Session()
         password = db.query(Person.password).filter(Person.email == email).first()
         db.close()
         return password
 
-    def getUserWithEmail(self,email):
+    def getUserWithEmail(email):
         db = Session()
         user = db.query(Person).filter(Person.email == email).first()
         db.close()
         return user
 
-    def persist_object(self, obj):
+    def persist_object(obj):
         db = Session()
         try:
             db.add(obj)
             db.commit()
         except:
             db.close()
-            return False
+            return 400
         db.close()
-        return True
+        return 200
 
     # Check if QR code is already scanned
-    def isScanned(self,eventId,personId):
+    def isScanned(eventId,personId):
         db = Session()
-        particepant = db.query(Particepant)\
-            .filter(Particepant.event_id == eventId) \
-            .filter(Particepant.person_id == personId)\
-            .first()
-
-        if particepant.event_scanned == None:
-            return True
-        else:
-            return False
+        particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
+                                           .filter(Particepant.event_id == eventId)\
+                                           .first()
         db.close()
+        if particepant == None:
+            print("Particepant not existing")
+            if(db.query(Event).filter(Event.id == eventId).count()):
+                print("event exists")
+                if(db.query(Person).filter(Person.id == personId).count()):
+                    print("person exists")
+                    db = Session()
+                    newParticepant = Particepant(
+                        person_id=personId,
+                        event_id=eventId,
+                        event_scanned=0
+                    )
+                    db.add(newParticepant)
+                    db.commit()
+                    db.close()
+                    particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
+                                           .filter(Particepant.event_id == eventId)\
+                                           .first()
+                    return particepant.event_scanned
+        return 400
 
-    def updateParticepantInfo(self,event_id, person_id):
+    def updateParticepantInfo(event_id, person_id):
         db = Session()
-        particepant = db.query(Particepant) \
-            .filter(Particepant.event_id == event_id ) \
-            .filter(Particepant.person_id == person_id)\
-            .first()
+        particepant = db.query(Particepant).filter(Particepant.person_id == person_id)\
+                                           .filter(Particepant.event_id == event_id)\
+                                           .first()
+
+        person = db.query(Person).filter(Person.id == person_id).first()
+        person.points = person.points + 1
 
         particepant.event_scanned = True
-
         db.commit()
         db.close()
         return 200
 
-    def checkEmailExistance(self, email):
+    def checkEmailExistance(email):
         db = Session()
         if db.query(Person).filter(Person.email == email).count():
             db.close()
             return True
         db.close()
         return False
+      
+    def savePassword(password, email):
+        db = Session()
+        person = db.query(Person).filter(Person.email == email).first()
 
-    def savePassword(self,password, email):
+        person.password = password
+
+        db.commit()
+        db.close()
+        return 200
+
+    def savePasswordHashed(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
 
@@ -137,7 +162,7 @@ class Persister():
         db.close()
         return 200
 
-    def changePassword(self, email, newPassword):
+    def changePassword(email, newPassword):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
         hashedNewPassword = pbkdf2_sha256.hash(newPassword)
@@ -152,12 +177,12 @@ class Persister():
             return 200
 
 
-    def checkPoints(self,email):
+    def checkPoints(email):
         db = Session()
         points = db.query(Person.points).filter(Person.email == email).first()
         return points
 
-    def addPoints(self, email):
+    def addPoints(email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
 
@@ -166,7 +191,7 @@ class Persister():
         db.close()
         return 200
 
-    def substractPoint(self, email):
+    def substractPoint(email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
 
@@ -180,7 +205,7 @@ class Persister():
             db.close()
             return 200
 
-    def resetStampCard(self, email):
+    def resetStampCard(email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
 
