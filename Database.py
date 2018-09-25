@@ -8,7 +8,7 @@ from flask_login import UserMixin
 import checks
 
 
-conn = sqla.create_engine('mysql+pymysql://root:adminPi@localhost/bslim?charset=utf8')
+conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -36,6 +36,7 @@ class Event(Base):
     leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
     cancel = sqla.Column('cancel',sqla.Integer)
     img = sqla.Column('img',sqla.VARCHAR(200))
+    qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
 
 class Content(Base):
     __tablename__ = 'content'
@@ -139,6 +140,16 @@ class Persister():
         if db.query(Person).filter(Person.email == email).count():
             db.close()
             return True
+        db.close()
+        return False
+
+    def findEvent(qrCode):
+        db = Session()
+        if db.query(Event).filter(Event.qr_code == qrCode).count():
+            event = db.query(Event).filter(Event.qr_code == qrCode).first()
+            print(event)
+            db.close()
+            return event
         db.close()
         return False
       

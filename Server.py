@@ -41,7 +41,7 @@ def loginPageHandler():
     else:
         user = LoginForm.loginUser(request.get_json())
         if(user != False):
-            return jsonify({'value': True, 'clearance': user.clearance})
+            return jsonify({'value': True, 'clearance': user.clearance, 'userId': user.id})
         else:
             return jsonify(400)
 
@@ -126,18 +126,26 @@ def resetStampCard():
     return jsonify({"responseCode": UserApi.resetStampCard(email)})
 
 ################################################################
-# news
-################################################################
-
-app.route('/api/createEvent', methods=['POST'])
-def createEvent(name,begin,end,location,description,leader,img):
-    return eventApi.createEvent(name,begin,end,location,description,leader,img)
-
-################################################################
 # events
 ################################################################
 
-app.route('/api/createNews', methods=['POST'])
+@app.route('/api/createEvent', methods=['POST'])
+def createEvent():
+    data = request.get_json()
+    return jsonify({"responseCode": eventApi.createEvent(data.get("id"),
+                                    data.get('name'),
+                                    data.get('begin'),
+                                    data.get('end'),
+                                    data.get('location'),
+                                    data.get('description'),
+                                    data.get('leader'),
+                                    data.get('img'))})
+
+################################################################
+# news
+################################################################
+
+@app.route('/api/createNews', methods=['POST'])
 def createNews(emtpy):
     return None
 
@@ -156,10 +164,20 @@ def eventScanned():
         responseCode = eventApi.eventScanned(eventId,personId)
         return jsonify({"responseCode": responseCode})
 
+@app.route('/api/eventByCode', methods=['POST'])
+def findEvent():
+    data = request.get_json()
+    qrCode = data.get("qrCode")
+    result = eventApi.findEvent(qrCode)
+    if result:
+        return jsonify({"responseCode": "200", "eventId": result.id})
+    return jsonify({"responseCode": "400", "eventId": None})
+
+
 @app.route('/register', methods=['POST'])
 def registerHandler():
     return jsonify(RegisterForm.registerSubmit(request.get_json()))
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    app.run(debug=True)
