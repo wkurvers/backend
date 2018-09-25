@@ -61,7 +61,7 @@ def registerSubmit(form):
         firstname=firstName,
         lastname=lastName,
         email=email,
-        password=pbkdf2_sha256.hash(password),
+        password=password,
         points= 0,
         clearance= 0,
         license = True

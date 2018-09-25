@@ -14,3 +14,5 @@ def loginUser(form):
         user = UserApi.getUserByEmail(emailLogin)
         login_user(user)
         return user
+    else:
+        return False
