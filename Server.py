@@ -51,7 +51,7 @@ def loginCheck():
     if current_user.is_authenticated:
         return jsonify({"value": True, "email": current_user.email})
     else:
-        return jsonify({"value": False "email": None})
+        return jsonify({"value": False, "email": None})
 
 @app.route('/logout', methods=['GET'])
 def logout():
