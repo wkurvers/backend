@@ -10,15 +10,12 @@ def loginUser(form):
     dbPassword = UserApi.getPassword(emailLogin)[0]
     print
     if dbPassword == None or dbEmail == None:
-        print("No db data found")
         return False
     elif dbPassword == password_candidate:
-        print("should be logging in")
         user = UserApi.getUserByEmail(emailLogin)
         Persister.loginUser(user)
         return user
     else:
-        print("Help het gaat allemaal fout")
         return False
 
 def logoutUser(form):
