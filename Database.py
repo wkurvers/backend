@@ -198,19 +198,21 @@ class Persister():
         db.close()
         return 200
 
-    def changePassword(email, newPassword):
+    def changePassword(id, oldPassword, newPassword):
         db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
-        hashedNewPassword = pbkdf2_sha256.hash(newPassword)
-
-        if checks.emptyCheck([newPassword]) or newPassword < 5 or person.password == hashedNewPassword:
-            return 400
-        else:
-            person.password = hashedNewPassword
-
-            db.commit()
-            db.close()
-            return 200
+        person = db.query(Person).filter(Person.id == id).first()
+        # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
+        hashedNewPassword = newPassword
+        if person.password == oldPassword:
+            if checks.emptyCheck([newPassword]) or len(newPassword) < 5 or person.password == hashedNewPassword:
+                return 400
+            else:
+                person.password = hashedNewPassword
+    
+                db.commit()
+                db.close()
+                return 200
+        return 400
 
 
     def checkPoints(email):

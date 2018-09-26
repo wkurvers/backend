@@ -89,11 +89,13 @@ def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
     UserApi.saveNewPassword(temp,email)
     return temp
 
-@app.route('/api/changePassword', methods=['GET'])
+@app.route('/api/changePassword', methods=['POST'])
 def changePassword():
-    newPassword = request.args.get('password',None)
-    email = current_user.email
-    return UserApi.changePassword(email,newPassword)
+    data = request.get_json()
+    id = data.get('id')
+    oldPassword = data.get('oldPassword')
+    newPassword = data.get('newPassword')
+    return jsonify({"responseCode": UserApi.changePassword(id, oldPassword, newPassword)})
 
 ################################################################
 # points and stampcard

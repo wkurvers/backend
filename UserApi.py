@@ -15,12 +15,12 @@ def getPassword(email):
 
 def saveNewPassword(temp,email):
     if Persister.checkEmailExistance(email):
-        return Persister.savePasswordHashed(temp,email)
+        return Persister.savePassword(temp,email) #change to hashed
     else:
         return 400
 
-def changePassword(email, newPassword):
-    return Persister.changePassword(email, newPassword)
+def changePassword(id, oldPassword, newPassword):
+    return Persister.changePassword(id, oldPassword, newPassword)
 
 def checkPoints(email):
     return Persister.checkPoints(email)
