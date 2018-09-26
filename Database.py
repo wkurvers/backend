@@ -141,7 +141,9 @@ class Persister():
                                            .filter(Particepant.event_id == eventId)\
                                            .first()
                     return particepant.event_scanned
-        return 400
+        elif particepant.event_scanned:
+            return 400
+        return 200
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
