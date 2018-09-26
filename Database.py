@@ -215,23 +215,23 @@ class Persister():
             return 200
 
 
-    def checkPoints(email):
+    def checkPoints(id):
         db = Session()
-        points = db.query(Person.points).filter(Person.email == email).first()
+        points = db.query(Person.points).filter(Person.id == id).first()
         return points
 
-    def addPoints(email):
+    def addPoints(id):
         db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
+        person = db.query(Person).filter(Person.id == id).first()
 
         person.points = person.points + 1
         db.commit()
         db.close()
         return 200
 
-    def substractPoint(email):
+    def substractPoint(id):
         db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
+        person = db.query(Person).filter(Person.id == id).first()
 
         if person.points <= 0:
             db.commit()
@@ -243,9 +243,9 @@ class Persister():
             db.close()
             return 200
 
-    def resetStampCard(email):
+    def resetStampCard(id):
         db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
+        person = db.query(Person).filter(Person.id == id).first()
 
         if person.points >= 15:
             person.points = 0
