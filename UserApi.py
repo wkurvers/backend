@@ -22,18 +22,18 @@ def saveNewPassword(temp,email):
 def changePassword(id, oldPassword, newPassword):
     return Persister.changePassword(id, oldPassword, newPassword)
 
-def checkPoints(email):
-    return Persister.checkPoints(email)
+def checkPoints(id):
+    return Persister.checkPoints(id)
 
-def addPoints(email):
-    return Persister.addPoints(email)
-
-
-def substractPoint(email):
-    return Persister.substractPoint(email)
+def addPoints(id):
+    return Persister.addPoints(id)
 
 
-def resetStampCard(email):
-    return Persister.resetStampCard(email)
+def substractPoint(id):
+    return Persister.substractPoint(id)
+
+
+def resetStampCard(id):
+    return Persister.resetStampCard(id)
 
 
