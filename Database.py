@@ -24,6 +24,7 @@ class Person(Base,UserMixin):
     points = sqla.Column('points',sqla.Integer)
     clearance = sqla.Column('clearance',sqla.Integer)
     license = sqla.Column('license',sqla.Boolean)
+    authenticated = sqla.Column('authenticated', sqla.Boolean)
 
 class Event(Base):
     __tablename__ = 'event'
@@ -70,6 +71,26 @@ class Persister():
         db.close()
         return user
 
+    def loginUser(user):
+        db = Session()
+        person = db.query(Person).filter(Person.id == user.id).first()
+        if not person.authenticated:
+            person.authenticated = True
+            db.commit()
+            db.close()
+            return True
+        return False
+
+    def logoutUser(user):
+        db = Session()
+        person = db.query(Person).filter(Person.id == user.id).first()
+        if person.authenticated:
+            person.authenticated = False
+            db.commit()
+            db.close()
+            return True
+        return False
+
     def getPassword(email):
         db = Session()
         password = db.query(Person.password).filter(Person.email == email).first()
@@ -94,6 +115,7 @@ class Persister():
         return 200
 
     # Check if QR code is already scanned
+    # If the user has not subscribed himselfs to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId,personId):
         db = Session()
         particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
@@ -121,6 +143,7 @@ class Persister():
                     return particepant.event_scanned
         return 400
 
+    # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
         db = Session()
         particepant = db.query(Particepant).filter(Particepant.person_id == person_id)\
@@ -143,6 +166,8 @@ class Persister():
         db.close()
         return False
 
+    # searches for an event with a specifyc qr_code value
+    # returns False if one isn't found otherwise returns the event
     def findEvent(qrCode):
         db = Session()
         if db.query(Event).filter(Event.qr_code == qrCode).count():

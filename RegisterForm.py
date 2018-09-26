@@ -4,6 +4,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 import checks
 from Database import Persister, Person
 
+# Function that validates all the gotten data and registers a new user
 def registerSubmit(form):
 
     firstName = form.get('firstName', None)
@@ -64,7 +65,8 @@ def registerSubmit(form):
         password=password,
         points= 0,
         clearance= 0,
-        license = True
+        license = True,
+        authenticated=False
     )
 
     return Persister.persist_object(person)
