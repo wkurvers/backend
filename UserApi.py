@@ -36,4 +36,8 @@ def substractPoint(id):
 def resetStampCard(id):
     return Persister.resetStampCard(id)
 
+def addProfilePhoto(url):
+    return Persister.addProfilePhoto(url,id)
 
+def getProfilePhoto(id):
+    return Persister.getProfilePhoto(id)
