@@ -147,6 +147,11 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
+@app.route('/api/saveMedia', methods=['POST'])
+def saveMedia():
+    data = request.get_json()
+    return eventApi.saveMedia(data.get("url"),data.get("eventName"))
+
 
 ################################################################
 # news
@@ -155,6 +160,24 @@ def createEvent():
 @app.route('/api/createNews', methods=['POST'])
 def createNews(emtpy):
     return None
+
+
+
+################################################################
+# mentor
+################################################################
+
+@app.route('api/addProfilePhoto', methods=['POST'])
+def addProfilePhoto():
+    data = request.get_json()
+    return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
+
+@app.route('api/getProfilePhoto', methods=['GET'])
+def addProfilePhoto():
+    data = request.get_json()
+    return UserApi.getProfilePhoto(data.get('id'))
+
+
 
 
 ################################################################

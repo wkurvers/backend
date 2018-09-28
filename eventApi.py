@@ -34,3 +34,7 @@ def createEvent(id,name,begin,end,location,description,leader,img):
 			qr_code=qr_code
 		)
 	return Persister.persist_object(event)
+
+
+def saveMedia(url, eventName):
+    return Persister.saveMedia(url, eventName)
