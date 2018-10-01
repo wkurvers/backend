@@ -8,7 +8,6 @@ def loginUser(form):
     password_candidate = form.get('password')
     dbEmail = UserApi.getEmail(emailLogin)[0]
     dbPassword = UserApi.getPassword(emailLogin)[0]
-    print
     if dbPassword == None or dbEmail == None:
         return False
     elif dbPassword == password_candidate:
