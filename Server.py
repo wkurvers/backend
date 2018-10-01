@@ -65,6 +65,8 @@ def resetPassword():
     if (request.method == "POST"):
         data = json.loads(request.data)
         email = data['email']
+        if (UserApi.getEmail(email) == None):
+            return jsonify({"boolean": "false"})
         newPass = getNewPassword(email)
 
         # create message object instance
