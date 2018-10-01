@@ -51,5 +51,8 @@ def subToEvent(eventId, personId):
 				event_id=eventId,
 				event_scanned=0
 			)
-		return ({"responseCode": Persister.persist_object(particepant), "msg": "Added particepant entry."})
+		if Persister.persist_object(particepant) == 200:
+			return ({"responseCode": 200, "msg": "Added particepant entry."})
+		else:
+			return ({"responseCode": 400, "msg": "Could not add entry due to db error."})
 	return ({"responseCode": 400, "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
