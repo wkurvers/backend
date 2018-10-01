@@ -56,3 +56,6 @@ def subToEvent(eventId, personId):
 		else:
 			return ({"responseCode": 400, "msg": "Could not add entry due to db error."})
 	return ({"responseCode": 400, "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
+
+def saveMedia(url, eventName):
+    return Persister.saveMedia(url, eventName)

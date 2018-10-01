@@ -25,6 +25,7 @@ class Person(Base,UserMixin):
     clearance = sqla.Column('clearance',sqla.Integer)
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
+    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(200))
 
 class Event(Base):
     __tablename__ = 'event'
@@ -52,6 +53,13 @@ class Particepant(Base):
     event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
     event_scanned = sqla.Column('event_scanned',sqla.Boolean)
 
+class Media(Base):
+    __tablename__ = 'media'
+    event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
+    url = sqla.Column('url',sqla.VARCHAR(200))
+
+
+
 
 class Persister():
 
@@ -67,9 +75,13 @@ class Persister():
 
     def getEmail(email):
         db = Session()
-        user = db.query(Person.email).filter(Person.email == email).first()
+        user = db.query(Person).filter(Person.email == email).first()
         db.close()
-        return user
+
+        if user is not None:
+            return user.email
+        else:
+            return None
 
     def loginUser(user):
         db = Session()
@@ -93,9 +105,12 @@ class Persister():
 
     def getPassword(email):
         db = Session()
-        password = db.query(Person.password).filter(Person.email == email).first()
+        user = db.query(Person).filter(Person.email == email).first()
         db.close()
-        return password
+        if user is not None:
+            return user.password
+        else:
+            return None
 
     def getUserWithEmail(email):
         db = Session()
@@ -210,6 +225,7 @@ class Persister():
 
     def changePassword(id, oldPassword, newPassword):
         db = Session()
+        print(id)
         person = db.query(Person).filter(Person.id == id).first()
         # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
         hashedNewPassword = newPassword
@@ -264,6 +280,51 @@ class Persister():
             db.close()
             return 200
 
+    def saveMedia(url,eventName):
+        db = Session()
+
+        if db.query(Event).filter(Event.name == eventName).count():
+            eventId = db.query(Event.id).filter(Event.name == eventName).first()
+
+            newMedia = Media(
+                event_id=eventId,
+                url = url
+
+            )
+
+            db.add(newMedia)
+            db.commit()
+            db.close()
+            return 200
+        else:
+            return 400
+
+    def addProfilePhoto(url,id):
+        db = Session()
+
+        if db.query(Person).filter(Person.id == id).count():
+
+            person = db.query(Person).filter(Person.id == id).first()
+            person.profilePhoto = url
+
+            db.commit()
+            db.close()
+
+            return 200
+        else:
+            return 400
+
+    def getProfilePhoto(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.id == id).count():
+
+            profilePhoto = db.query(Person.profilePhoto).filter(Person.id == id).first()
+            db.close()
+
+            return profilePhoto
+        else:
+            return 400
 
 
 
