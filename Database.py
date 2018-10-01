@@ -67,9 +67,13 @@ class Persister():
 
     def getEmail(email):
         db = Session()
-        user = db.query(Person.email).filter(Person.email == email).first()
+        user = db.query(Person).filter(Person.email == email).first()
         db.close()
-        return user
+
+        if user is not None:
+            return user.email
+        else:
+            return None
 
     def loginUser(user):
         db = Session()
@@ -93,9 +97,12 @@ class Persister():
 
     def getPassword(email):
         db = Session()
-        password = db.query(Person.password).filter(Person.email == email).first()
+        user = db.query(Person).filter(Person.email == email).first()
         db.close()
-        return password
+        if user is not None:
+            return user.password
+        else:
+            return None
 
     def getUserWithEmail(email):
         db = Session()
@@ -202,6 +209,7 @@ class Persister():
 
     def changePassword(id, oldPassword, newPassword):
         db = Session()
+        print(id)
         person = db.query(Person).filter(Person.id == id).first()
         # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
         hashedNewPassword = newPassword

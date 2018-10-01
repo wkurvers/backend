@@ -4,9 +4,9 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 import checks
 from Database import Persister, Person
 
+
 # Function that validates all the gotten data and registers a new user
 def registerSubmit(form):
-
     firstName = form.get('firstName', None)
     lastName = form.get('lastName', None)
     email = form.get('email', None)
@@ -22,50 +22,45 @@ def registerSubmit(form):
     email = email.lower()
     password = password.lower()
 
-    if checks.checkSpecialChars([firstName,lastName]):
-        return jsonify({
-            "message": "Gebruik alstublieft geen speciale karakters in uw naam!"
-        }), 400, {'ContentType': 'application/json'}
+    if checks.checkSpecialChars([firstName, lastName]):
+        msg = "Gebruik alstublieft geen speciale karakters in uw naam!"
+        return {"code": 400, "message": msg}
 
     if checks.checkSpecialCharsEmail(email):
-        return jsonify({
-            "message": "Please use no special characters in your email!"
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Gebruik alstublieft geen speciale karakters in uw email!"
+        return {"code": 400, "message": msg}
 
     if checks.emptyCheck([firstName, lastName, email, password]):
-        return jsonify({
-            "message": "Vul alstublieft alle velden in."
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Vul alstublieft alle velden in."
+        return {"code": 400, "message": msg}
 
     if checks.lengthSixtyFourCheck([firstName, lastName, email]):
-        return jsonify({
-            "message": "Vul alsublieft niet meer dan 64 karakters in."
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Vul alsublieft niet meer dan 64 karakters in."
+        return {"code": 400, "message": msg}
 
     password = form.get('password', None)
     check = checks.passwordLengthCheck(password)
+
     if check == [False, "short"]:
-        return jsonify({
-            "message": "Uw wachtwoord moet langer dan 5 karakters zijn."
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Uw wachtwoord moet langer dan 5 karakters zijn."
+        return {"code": 400, "message": msg}
+
     if check == [False, "long"]:
-        return jsonify({
-            "message": "Uw wachtwoord moet korter zijn dan 64 karakters."
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Uw wachtwoord moet korter zijn dan 64 karakters."
+        return {"code": 400, "message": msg}
 
     if Persister.checkEmailExistance(email):
-        return jsonify({
-            "message": "Dit emailadres bestaat al."
-        }), 400, {'ContentType': 'application/json'}
+        msg = "Dit emailadres bestaat al."
+        return {"code": 400, "message": msg}
 
     person = Person(
         firstname=firstName,
         lastname=lastName,
         email=email,
         password=password,
-        points= 0,
-        clearance= 0,
-        license = True,
+        points=0,
+        clearance=0,
+        license=True,
         authenticated=False
     )
 
