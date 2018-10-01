@@ -39,13 +39,13 @@ def route(path):
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return jsonify({'value': False, 'clearance': None, 'userId': None})
+        return jsonify({'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
     else:
-        user = LoginForm.loginUser(request.get_json())
-        if (user != False):
-            return jsonify({'value': True, 'clearance': user.clearance, 'userId': user.id})
+        response = LoginForm.loginUser(request.get_json())
+        if response['boolean'] == "true":
+            return jsonify(response)
         else:
-            return jsonify({'value': False, 'clearance': None, 'userId': None})
+            return jsonify(response)
 
 
 # check if user is loggedin using current_user from flask.
@@ -99,6 +99,7 @@ def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
 def changePassword():
     data = request.get_json()
     id = data.get('id')
+    print(id)
     oldPassword = data.get('oldPassword')
     newPassword = data.get('newPassword')
     return jsonify({"responseCode": UserApi.changePassword(id, oldPassword, newPassword)})
@@ -211,7 +212,7 @@ def findEvent():
 # Is called to register a new user
 @app.route('/register', methods=['POST'])
 def registerHandler():
-    return jsonify(RegisterForm.registerSubmit(request.get_json()))
+    return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json())})
 
 
 if __name__ == "__main__":
