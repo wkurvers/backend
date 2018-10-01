@@ -39,13 +39,13 @@ def route(path):
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return jsonify({'value': False, 'clearance': None, 'userId': None})
+        return jsonify({'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
     else:
-        user = LoginForm.loginUser(request.get_json())
-        if (user != False):
-            return jsonify({'value': True, 'clearance': user.clearance, 'userId': user.id})
+        response = LoginForm.loginUser(request.get_json())
+        if response['boolean'] == "true":
+            return jsonify(response)
         else:
-            return jsonify({'value': False, 'clearance': None, 'userId': None})
+            return jsonify(response)
 
 
 # check if user is loggedin using current_user from flask.
@@ -99,6 +99,7 @@ def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
 def changePassword():
     data = request.get_json()
     id = data.get('id')
+    print(id)
     oldPassword = data.get('oldPassword')
     newPassword = data.get('newPassword')
     return jsonify({"responseCode": UserApi.changePassword(id, oldPassword, newPassword)})
@@ -147,10 +148,16 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
+
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
+
+@app.route('/api/saveMedia', methods=['POST'])
+def saveMedia():
+    data = request.get_json()
+    return eventApi.saveMedia(data.get("url"),data.get("eventName"))
 
 
 ################################################################
@@ -160,6 +167,24 @@ def subToEvent():
 @app.route('/api/createNews', methods=['POST'])
 def createNews(emtpy):
     return None
+
+
+
+################################################################
+# mentor
+################################################################
+
+@app.route('/api/addProfilePhoto', methods=['POST'])
+def addProfilePhoto():
+    data = request.get_json()
+    return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
+
+@app.route('/api/getProfilePhoto', methods=['POST'])
+def getProfilePhoto():
+    data = request.get_json()
+    return UserApi.getProfilePhoto(data.get('id'))
+
+
 
 
 ################################################################
@@ -193,7 +218,7 @@ def findEvent():
 # Is called to register a new user
 @app.route('/register', methods=['POST'])
 def registerHandler():
-    return jsonify(RegisterForm.registerSubmit(request.get_json()))
+    return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json())})
 
 
 if __name__ == "__main__":
