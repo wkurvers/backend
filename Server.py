@@ -173,7 +173,7 @@ def addProfilePhoto():
     data = request.get_json()
     return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
 
-@app.route('/api/getProfilePhoto', methods=['GET'])
+@app.route('/api/getProfilePhoto', methods=['POST'])
 def getProfilePhoto():
     data = request.get_json()
     return UserApi.getProfilePhoto(data.get('id'))
