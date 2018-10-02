@@ -11,8 +11,6 @@ def loginUser(form):
     dbEmail = UserApi.getEmail(emailLogin)
 
     if dbEmail is None:
-        print(" email1")
-        print(" pass1")
         return {"boolean": "false", "userId": None, "clearance": None, "msg": "Email klopt niet"}
 
     dbPassword = UserApi.getPassword(emailLogin)
@@ -26,20 +24,6 @@ def loginUser(form):
         print(" email2")
         print(" pass2")
         return {"boolean": "false", "userId": None, "clearance": None, "msg": "Wachtwoord klopt niet"}
-
-    # if dbEmail is None:
-    #     msg = "Email klopt niet"
-    #     return {"bool": False, "message": msg}
-    #
-    # if dbPassword is None:
-    #     msg = "Wachtwoord klopt niet"
-    #     return {"bool": False, "message": msg}
-    #
-    # elif dbPassword == passwordLogin:
-    #     user = UserApi.getUserByEmail(emailLogin)
-    #     Persister.loginUser(user)
-    #     return {"bool"}user
-
 
 def logoutUser(form):
     user = Persister.getPerson(form.get('id'))
