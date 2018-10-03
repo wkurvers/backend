@@ -87,21 +87,18 @@ class Persister():
     def loginUser(user):
         db = Session()
         person = db.query(Person).filter(Person.id == user.id).first()
-        if not person.authenticated:
-            person.authenticated = True
-            db.commit()
-            db.close()
-            return True
-        return False
+        person.authenticated = True
+        db.commit()
+        db.close()
+        return True
 
     def logoutUser(user):
         db = Session()
         person = db.query(Person).filter(Person.id == user.id).first()
-        if person.authenticated:
-            person.authenticated = False
-            db.commit()
-            db.close()
-            return True
+        person.authenticated = False
+        db.commit()
+        db.close()
+        return True
         return False
 
     def getPassword(email):
@@ -198,7 +195,6 @@ class Persister():
         db = Session()
         if db.query(Event).filter(Event.qr_code == qrCode).count():
             event = db.query(Event).filter(Event.qr_code == qrCode).first()
-            print(event)
             db.close()
             return event
         db.close()
@@ -214,19 +210,8 @@ class Persister():
         db.close()
         return 200
 
-    def savePasswordHashed(password, email):
-        db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
-
-        person.password = pbkdf2_sha256.hash(password)
-
-        db.commit()
-        db.close()
-        return 200
-
     def changePassword(id, oldPassword, newPassword):
         db = Session()
-        print(id)
         person = db.query(Person).filter(Person.id == id).first()
         # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
         hashedNewPassword = newPassword
