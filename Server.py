@@ -139,8 +139,8 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-    return jsonify({"responseCode": eventApi.createEvent(data.get("id"),
-                                                         data.get('name'),
+    print(data)
+    return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
                                                          data.get('location'),

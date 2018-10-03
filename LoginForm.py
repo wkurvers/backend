@@ -7,7 +7,6 @@ from Database import Persister, Person
 def loginUser(form):
     emailLogin = form.get('email')
     passwordLogin = form.get('password')
-    print(UserApi.getEmail(emailLogin))
     dbEmail = UserApi.getEmail(emailLogin)
 
     if dbEmail is None:
@@ -21,8 +20,6 @@ def loginUser(form):
         return {"boolean": "true", "userId": user.id, "clearance": user.clearance, "msg": "OK"}
 
     else:
-        print(" email2")
-        print(" pass2")
         return {"boolean": "false", "userId": None, "clearance": None, "msg": "Wachtwoord klopt niet"}
 
 def logoutUser(form):
