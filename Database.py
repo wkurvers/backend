@@ -25,6 +25,7 @@ class Person(Base,UserMixin):
     clearance = sqla.Column('clearance',sqla.Integer)
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
+    biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(200))
 
 class Event(Base):
