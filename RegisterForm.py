@@ -6,7 +6,7 @@ from Database import Persister, Person
 
 
 # Function that validates all the gotten data and registers a new user
-def registerSubmit(form):
+def registerSubmit(form, clearance):
     firstName = form.get('firstName', None)
     lastName = form.get('lastName', None)
     email = form.get('email', None)
@@ -53,15 +53,30 @@ def registerSubmit(form):
         msg = "Dit emailadres bestaat al."
         return {"code": 400, "message": msg}
 
-    person = Person(
-        firstname=firstName,
-        lastname=lastName,
-        email=email,
-        password=password,
-        points=0,
-        clearance=0,
-        license=True,
-        authenticated=False
-    )
-
-    return Persister.persist_object(person)
+    if(clearance == 0):
+        person = Person(
+            firstname=firstName,
+            lastname=lastName,
+            email=email,
+            password=password,
+            points=0,
+            clearance=0,
+            license=True,
+            authenticated=False
+        )
+        return Persister.persist_object(person)
+    elif(clearance == 1):
+        person = Person(
+            firstname=firstName,
+            lastname=lastName,
+            email=email,
+            password=password,
+            points=0,
+            clearance=1,
+            license=True,
+            authenticated=False,
+            biography=form.get('biography')
+        )
+        return Persister.persist_object(person)
+    else:
+        return
