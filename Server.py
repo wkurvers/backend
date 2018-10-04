@@ -164,6 +164,11 @@ def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
+@app.route('/api/searchEvent', methods=['POST'])
+def searchEvent():
+    data = request.get_json()
+    return jsonify(eventApi.searchEvent(data.get("searchString")))
+
 
 ################################################################
 # news
@@ -229,9 +234,12 @@ def registerNormalUser():
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
-@app.route('/api/getAllEvents', methods=['GET'])
+@app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
-    return eventApi.getAllEvents()
+    result = eventApi.getAllEvents()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "events": result})
+    return jsonify({"responseCode": 400, "events": {} })
 
 
 if __name__ == "__main__":
