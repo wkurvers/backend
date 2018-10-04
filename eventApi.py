@@ -28,7 +28,6 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   description == '' or
 	   leader== ''):
 		return 400
-	print(begin)
 
 	event = Event(
 			name=name,
@@ -58,3 +57,7 @@ def subToEvent(eventId, personId):
 
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
+
+def searchEvent(searchString):
+	found = Persister.searchEvent(searchString)
+	return ({"responseCode": 200, "msg": "successful search for event", "events": found})

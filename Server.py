@@ -164,6 +164,11 @@ def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
+@app.route('/api/searchEvent', methods=['POST'])
+def searchEvent():
+    data = request.get_json()
+    return jsonify(eventApi.searchEvent(data.get("searchString")))
+
 
 ################################################################
 # news

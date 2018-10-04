@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
 from flask_login import UserMixin
 import checks
+import re
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
@@ -63,7 +64,6 @@ class Media(Base):
 
 
 class Persister():
-
     def getPerson(id):
         db = Session()
         try:
@@ -199,7 +199,141 @@ class Persister():
             return event
         db.close()
         return False
-      
+
+    def searchEvent(searchString):
+        db=Session()
+
+        #define month numbers to translate user searchString if it contains months
+        months = {
+            "january" : '1',
+            "february" : '2',
+            "maart" : '3',
+            "april" : '4',
+            "mei" : '5',
+            "juni" : '6',
+            "juli" : '7',
+            "augustus" : '8',
+            "september" : '9',
+            "oktober" : '10',
+            "november" : '11',
+            "december" : '12'
+        }
+
+        #declare all dicts: to be filled by query results later
+        returnData = {}
+        leaders = {}
+        eventsByLeader = {}
+        eventsByBegin = {}
+        eventsByEnd = {}
+
+        #query the db on event names containging the search string
+        eventsName = db.query(Event).filter(Event.name.contains(searchString)).all()
+
+        #query the db for persons whose first and/or last name contain the search string
+        personsFirstName = db.query(Person).filter(Person.firstname.contains(searchString)).all()
+        personsLastName = db.query(Person).filter(Person.lastname.contains(searchString)).all()
+
+        #Convert the user query to a date query
+        for month in months:
+            if month in searchString.lower():
+                #searchString is a date query
+                monthNumber = months[month]
+                if any(char.isdigit() for char in searchString):
+                    numbers = re.findall(r'\d+', searchString)
+                    dayNumber = numbers[0]
+                    if int(dayNumber) < 10:
+                        dayNumber = "0" + dayNumber
+                    yearNumber = ''
+                    if len(numbers) > 1:
+                        yearNumber = numbers[1] + '-'
+                    dateString = yearNumber + monthNumber + "-" + dayNumber
+                    eventsByBegin = db.query(Event).filter(Event.begin.contains(dateString)).all()
+                    eventsByEnd = db.query(Event).filter(Event.end.contains(dateString)).all()
+                else:
+                    eventsByBegin = db.query(Event).filter(Event.begin.contains(monthNumber)).all()
+                    eventsByEnd = db.query(Event).filter(Event.end.contains(monthNumber)).all()
+            
+        for event in eventsByBegin:
+            if event.name not in returnData:
+                eventEntry = {}
+                person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['name'] = event.name
+                eventEntry['begin'] = event.begin
+                eventEntry['end'] = event.end
+                eventEntry['location'] = event.location
+                eventEntry['desc'] = event.desc
+                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['cancel'] = event.cancel
+                eventEntry['img'] = event.img
+                eventEntry['qr_code'] = event.qr_code
+
+                returnData[event.name] = eventEntry
+
+        for event in eventsByEnd:
+            if event.name not in returnData:
+                eventEntry = {}
+                person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['name'] = event.name
+                eventEntry['begin'] = event.begin
+                eventEntry['end'] = event.end
+                eventEntry['location'] = event.location
+                eventEntry['desc'] = event.desc
+                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['cancel'] = event.cancel
+                eventEntry['img'] = event.img
+                eventEntry['qr_code'] = event.qr_code
+
+                returnData[event.name] = eventEntry
+
+        #loop through query result and add the person to the leaders dict if it isn't there already
+        for person in personsFirstName:
+            if person.id not in leaders:
+                leaders[person.id] = person
+
+        #loop through query result and add the person to the leaders dict if it isn't there already
+        for person in personsLastName:
+            if person.id not in leaders:
+                leaders[person.id] = person
+
+        #loop through leaders dict and if it exists get all events that that person leads, if it isn't already in the returnData dict it adds the event
+        for personId in leaders:
+            person = leaders[personId]
+            if db.query(Event).filter(Event.leader == person.id).count():
+                events = db.query(Event).filter(Event.leader == person.id).all()
+                for event in events:
+                    if event.name not in returnData:
+                        eventEntry = {}
+                        eventEntry['name'] = event.name
+                        eventEntry['begin'] = event.begin
+                        eventEntry['end'] = event.end
+                        eventEntry['location'] = event.location
+                        eventEntry['desc'] = event.desc
+                        eventEntry['leader'] = person.firstname + " " + person.lastname
+                        eventEntry['cancel'] = event.cancel
+                        eventEntry['img'] = event.img
+                        eventEntry['qr_code'] = event.qr_code
+    
+                        returnData[event.name] = eventEntry
+        
+        #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
+        for event in eventsName:
+            eventEntry = {}
+            if event.name not in returnData:
+                person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['name'] = event.name
+                eventEntry['begin'] = event.begin
+                eventEntry['end'] = event.end
+                eventEntry['location'] = event.location
+                eventEntry['desc'] = event.desc
+                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['cancel'] = event.cancel
+                eventEntry['img'] = event.img
+                eventEntry['qr_code'] = event.qr_code
+    
+                returnData[event.name] = eventEntry
+        db.close()
+        return returnData
+
     def savePassword(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
