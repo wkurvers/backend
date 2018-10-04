@@ -40,6 +40,8 @@ class Event(Base):
     cancel = sqla.Column('cancel',sqla.Integer)
     img = sqla.Column('img',sqla.VARCHAR(200))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
+    created = sqla.Column('created',sqla.DATETIME)
+    link = sqla.Column('link',sqla.VARCHAR(200))
 
 class Content(Base):
     __tablename__ = 'content'
@@ -311,6 +313,31 @@ class Persister():
             return profilePhoto
         else:
             return 400
+
+    def getLeader(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.id == id).count():
+            fName = db.query(Person.firstname).filter(Person.id == id).first()
+            lName = db.query(Person.lastname).filter(Person.id == id).first()
+
+            name = (fName, " " ,lName)
+            db.close()
+            return name
+        else:
+            return "Onbekend"
+
+    def getAllEvents():
+        db = Session()
+
+        if db.query(Event).count():
+            events = db.query(Event).all()
+            db.close()
+            return events
+        else:
+            return 400
+
+
 
 
 

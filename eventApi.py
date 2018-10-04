@@ -1,7 +1,7 @@
 from Database import Persister, Particepant, Event
 import string, random
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
-
+from flask import jsonify
 
 
 # returns 200 to indicate successful updating of the particepant info
@@ -58,3 +58,24 @@ def subToEvent(eventId, personId):
 
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
+
+def getAllEvents():
+    events = Persister.getAllEvents()
+    result = []
+    for event in events:
+        leader = Persister.getLeader(event.leader)
+        photo = Persister.getProfilePhoto(event.leader)
+        createDate = event.created
+        created = createDate.strftime('%m/%d/%Y')
+        begin = event.begin
+        beginDay = begin.strftime('%d')
+        beginMonth = begin.strftime('%b')
+
+
+
+
+        result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+                       "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+                       "created": created,"link":event.link,"photo":photo })
+
+    return jsonify(result)
