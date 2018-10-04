@@ -16,14 +16,21 @@ def isScanned(eventId, person_id):
 def findEvent(qrCode):
 	return Persister.findEvent(qrCode)
 
-def createEvent(id,name,begin,end,location,description,leader,img):
+def createEvent(name,begin,end,location,description,leader,img):
 	size=6
 	chars=string.ascii_uppercase + string.digits
 	unHashed = ''.join(random.choice(chars) for _ in range(size))
 	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== ''):
+		return 400
+	print(begin)
 
 	event = Event(
-			id=id,
 			name=name,
 			begin=begin,
 			end=end,
@@ -36,28 +43,39 @@ def createEvent(id,name,begin,end,location,description,leader,img):
 		)
 	return Persister.persist_object(event)
 
+def subToEvent(eventId, personId):
+	if not Persister.checkParticepant(eventId, personId):
+		particepant = Particepant(
+				person_id=personId,
+				event_id=eventId,
+				event_scanned=0
+			)
+		if Persister.persist_object(particepant) == 200:
+			return ({"responseCode": 200, "msg": "Added particepant entry."})
+		else:
+			return ({"responseCode": 400, "msg": "Could not add entry due to db error."})
+	return ({"responseCode": 400, "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
 
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
 
 def getAllEvents():
-	events = Persister.getAllEvents()
-	result = []
-	for event in events:
-         leader = Persister.getLeader(event.leader)
-         photo = Persister.getProfilePhoto(event.leader)
-         createDate = event.created
-         created = createDate.strftime('%m/%d/%Y')
-         begin = event.begin
-         beginDay = begin.strftime('%d')
-         beginMonth = begin.strftime('%b')
+    events = Persister.getAllEvents()
+    result = []
+    for event in events:
+        leader = Persister.getLeader(event.leader)
+        photo = Persister.getProfilePhoto(event.leader)
+        createDate = event.created
+        created = createDate.strftime('%m/%d/%Y')
+        begin = event.begin
+        beginDay = begin.strftime('%d')
+        beginMonth = begin.strftime('%b')
 
 
 
 
-         result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+        result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
                        "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
                        "created": created,"link":event.link,"photo":photo })
-    
-	return jsonify(result)
 
+    return jsonify(result)

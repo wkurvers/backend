@@ -25,6 +25,7 @@ class Person(Base,UserMixin):
     clearance = sqla.Column('clearance',sqla.Integer)
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
+    biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(200))
 
 class Event(Base):
@@ -88,21 +89,18 @@ class Persister():
     def loginUser(user):
         db = Session()
         person = db.query(Person).filter(Person.id == user.id).first()
-        if not person.authenticated:
-            person.authenticated = True
-            db.commit()
-            db.close()
-            return True
-        return False
+        person.authenticated = True
+        db.commit()
+        db.close()
+        return True
 
     def logoutUser(user):
         db = Session()
         person = db.query(Person).filter(Person.id == user.id).first()
-        if person.authenticated:
-            person.authenticated = False
-            db.commit()
-            db.close()
-            return True
+        person.authenticated = False
+        db.commit()
+        db.close()
+        return True
         return False
 
     def getPassword(email):
@@ -132,7 +130,7 @@ class Persister():
         return 200
 
     # Check if QR code is already scanned
-    # If the user has not subscribed himselfs to the event and both the user and the event exists the user is automaticly subscribed to the event.
+    # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId,personId):
         db = Session()
         particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
@@ -140,11 +138,8 @@ class Persister():
                                            .first()
         db.close()
         if particepant == None:
-            print("Particepant not existing")
             if(db.query(Event).filter(Event.id == eventId).count()):
-                print("event exists")
                 if(db.query(Person).filter(Person.id == personId).count()):
-                    print("person exists")
                     db = Session()
                     newParticepant = Particepant(
                         person_id=personId,
@@ -162,6 +157,17 @@ class Persister():
             return 400
         return 200
 
+    # Checks whether or not a particepant entry or beloging events and persons already exists
+    def checkParticepant(eventId, personId):
+        db = Session()
+        if(db.query(Event).filter(Event.id == eventId).count()):
+                if(db.query(Person).filter(Person.id == personId).count()):
+                    if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
+                        db.close()
+                        return True
+        db.close()
+        return False
+
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
         db = Session()
@@ -175,7 +181,7 @@ class Persister():
         particepant.event_scanned = True
         db.commit()
         db.close()
-        return 200
+        return "200"
 
     def checkEmailExistance(email):
         db = Session()
@@ -191,7 +197,6 @@ class Persister():
         db = Session()
         if db.query(Event).filter(Event.qr_code == qrCode).count():
             event = db.query(Event).filter(Event.qr_code == qrCode).first()
-            print(event)
             db.close()
             return event
         db.close()
@@ -207,19 +212,8 @@ class Persister():
         db.close()
         return 200
 
-    def savePasswordHashed(password, email):
-        db = Session()
-        person = db.query(Person).filter(Person.email == email).first()
-
-        person.password = pbkdf2_sha256.hash(password)
-
-        db.commit()
-        db.close()
-        return 200
-
     def changePassword(id, oldPassword, newPassword):
         db = Session()
-        print(id)
         person = db.query(Person).filter(Person.id == id).first()
         # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
         hashedNewPassword = newPassword
