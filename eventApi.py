@@ -2,6 +2,7 @@ from Database import Persister, Particepant, Event
 import string, random
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from flask import jsonify
+import datetime
 
 
 # returns 200 to indicate successful updating of the particepant info
@@ -37,8 +38,10 @@ def createEvent(name,begin,end,location,description,leader,img):
 			desc=description,
 			leader=leader,
 			cancel=0,
-			img=img,
-			qr_code=qr_code
+			img='https://www.bslim.nl/wp-content/themes/hoklabslim/images/logo.png',
+			qr_code=qr_code,
+			created= datetime.datetime.now(),
+			link= None
 		)
 	return Persister.persist_object(event)
 
@@ -64,21 +67,19 @@ def searchEvent(searchString):
 
 def getAllEvents():
     events = Persister.getAllEvents()
-    result = []
-    for event in events:
-        leader = Persister.getLeader(event.leader)
-        photo = Persister.getProfilePhoto(event.leader)
-        createDate = event.created
-        created = createDate.strftime('%m/%d/%Y')
-        begin = event.begin
-        beginDay = begin.strftime('%d')
-        beginMonth = begin.strftime('%b')
+    if events != 400:
+    	result = []
+    	for event in events:
+    	    leader = Persister.getLeader(event.leader)
+    	    photo = Persister.getProfilePhoto(event.leader)
+    	    createDate = event.created
+    	    created = createDate.strftime('%m/%d/%Y')
+    	    begin = event.begin
+    	    beginDay = begin.strftime('%d')
+    	    beginMonth = begin.strftime('%b')
+	
+    	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+    	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+    	                   "created": created,"link":event.link,"photo":photo })
 
-
-
-
-        result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
-                       "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-                       "created": created,"link":event.link,"photo":photo })
-
-    return jsonify(result)
+    return result

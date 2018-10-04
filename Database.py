@@ -463,13 +463,12 @@ class Persister():
 
     def getAllEvents():
         db = Session()
-
         if db.query(Event).count():
             events = db.query(Event).all()
             db.close()
             return events
         else:
-            return 400
+            return {}
 
 
 
