@@ -468,7 +468,7 @@ class Persister():
             db.close()
             return events
         else:
-            return {}
+            return 400
 
 
 

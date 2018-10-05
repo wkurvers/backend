@@ -29,7 +29,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   description == '' or
 	   leader== ''):
 		return 400
-
+	print(img)
 	event = Event(
 			name=name,
 			begin=begin,
