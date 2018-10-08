@@ -63,7 +63,22 @@ def saveMedia(url, eventName):
 
 def searchEvent(searchString):
 	found = Persister.searchEvent(searchString)
-	return ({"responseCode": 200, "msg": "successful search for event", "events": found})
+	result = []
+	for eventName in found:
+		event = found[eventName]
+		leader = Persister.getLeader(event['leader'])
+		photo = Persister.getProfilePhoto(event['leader'])
+		createDate = event['created']
+		created = createDate.strftime('%m/%d/%Y')
+		begin = event['begin']
+		beginDay = begin.strftime('%d')
+		beginMonth = begin.strftime('%b')
+
+		result.append({"id": event['id'], "name": event['name'], "begin": beginDay,"beginMonth": beginMonth,"end": event['end'],
+    	               "location": event['location'], "desc": event['desc'], "leader": leader, "cancel": event['cancel'], "img": event['img'],"qrCode": event['qr_code'],
+    	               "created": created,"link":event['link'],"photo":photo });
+
+	return result
 
 def getAllEvents():
     events = Persister.getAllEvents()

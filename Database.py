@@ -204,7 +204,6 @@ class Persister():
 
     def searchEvent(searchString):
         db=Session()
-
         #define month numbers to translate user searchString if it contains months
         months = {
             "january" : '1',
@@ -259,15 +258,18 @@ class Persister():
             if event.name not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['leader'] = person.id
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
+                eventEntry['created'] = event.created
+                eventEntry['link'] = event.link
 
                 returnData[event.name] = eventEntry
 
@@ -275,15 +277,18 @@ class Persister():
             if event.name not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['leader'] = person.id
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
+                eventEntry['created'] = event.created
+                eventEntry['link'] = event.link
 
                 returnData[event.name] = eventEntry
 
@@ -305,15 +310,18 @@ class Persister():
                 for event in events:
                     if event.name not in returnData:
                         eventEntry = {}
+                        eventEntry['id'] = event.id
                         eventEntry['name'] = event.name
                         eventEntry['begin'] = event.begin
                         eventEntry['end'] = event.end
                         eventEntry['location'] = event.location
                         eventEntry['desc'] = event.desc
-                        eventEntry['leader'] = person.firstname + " " + person.lastname
+                        eventEntry['leader'] = person.id
                         eventEntry['cancel'] = event.cancel
                         eventEntry['img'] = event.img
                         eventEntry['qr_code'] = event.qr_code
+                        eventEntry['created'] = event.created
+                        eventEntry['link'] = event.link
     
                         returnData[event.name] = eventEntry
         
@@ -322,15 +330,18 @@ class Persister():
             eventEntry = {}
             if event.name not in returnData:
                 person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.firstname + " " + person.lastname
+                eventEntry['leader'] = person.id
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
+                eventEntry['created'] = event.created
+                eventEntry['link'] = event.link
     
                 returnData[event.name] = eventEntry
         db.close()
