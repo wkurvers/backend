@@ -4,6 +4,8 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from flask import jsonify
 import datetime
 
+now = datetime.datetime.now()
+
 
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
@@ -66,20 +68,32 @@ def searchEvent(searchString):
 	return ({"responseCode": 200, "msg": "successful search for event", "events": found})
 
 def getAllEvents():
-    events = Persister.getAllEvents()
-    if events != 400:
-    	result = []
-    	for event in events:
-    	    leader = Persister.getLeader(event.leader)
-    	    photo = Persister.getProfilePhoto(event.leader)
-    	    createDate = event.created
-    	    created = createDate.strftime('%m/%d/%Y')
-    	    begin = event.begin
-    	    beginDay = begin.strftime('%d')
-    	    beginMonth = begin.strftime('%b')
-	
-    	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
-    	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-    	                   "created": created,"link":event.link,"photo":photo })
+	events = Persister.getAllEvents()
+	result = []
+	if events != 400:
+		for event in events:
+			leader = Persister.getLeader(event.leader)
+			photo = Persister.getProfilePhoto(event.leader)
+			createDate = event.created
+			created = createDate.strftime('%m/%d/%Y')
+			begin = event.begin
+			beginDay = begin.strftime('%d')
+			beginMonth = begin.strftime('%b')
 
-    return result
+			result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+						   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+						   "created": created,"link":event.link,"photo":photo })
+
+	return result
+
+def getAllNewsItems():
+	news = Persister.getAllNewsItems()
+
+	result = []
+	if news != 400:
+		for item in news:
+			createDate = now.now()
+			created = createDate.strftime('%m/%d/%Y')
+			result.append({"id": item.id, "url": item.url, "title": item.title,"desc": item.desc,"created": created})
+
+	return result

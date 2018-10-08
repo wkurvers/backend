@@ -470,6 +470,16 @@ class Persister():
         else:
             return {}
 
+    def getAllNewsItems():
+        db = Session()
+
+        if db.query(Content).count():
+            news = db.query(Content).all()
+            db.close()
+            return news
+        else:
+            return {}
+
 
 
 

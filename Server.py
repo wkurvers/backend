@@ -241,6 +241,12 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
 
+@app.route('/api/getAllNewsItems', methods=['GET'])
+def getNews():
+    result =  eventApi.getAllNewsItems()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
