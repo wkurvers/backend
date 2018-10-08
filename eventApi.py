@@ -27,9 +27,9 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   end == '' or
 	   location == '' or
 	   description == '' or
-	   leader== ''):
+	   leader== '' or
+	   img==''):
 		return 400
-	print(img)
 	event = Event(
 			name=name,
 			begin=begin,
@@ -38,7 +38,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 			desc=description,
 			leader=leader,
 			cancel=0,
-			img='https://www.bslim.nl/wp-content/themes/hoklabslim/images/logo.png',
+			img=img,
 			qr_code=qr_code,
 			created= datetime.datetime.now(),
 			link= None

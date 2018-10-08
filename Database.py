@@ -27,7 +27,7 @@ class Person(Base,UserMixin):
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
-    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(200))
+    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(100000))
 
 class Event(Base):
     __tablename__ = 'event'
@@ -39,15 +39,15 @@ class Event(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(200))
     leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
     cancel = sqla.Column('cancel',sqla.Integer)
-    img = sqla.Column('img',sqla.VARCHAR(200))
+    img = sqla.Column('img',sqla.VARCHAR(100000))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
     created = sqla.Column('created',sqla.DATETIME)
-    link = sqla.Column('link',sqla.VARCHAR(200))
+    link = sqla.Column('link',sqla.VARCHAR(400))
 
 class Content(Base):
     __tablename__ = 'content'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
-    url = sqla.Column('url',sqla.VARCHAR(200))
+    url = sqla.Column('url',sqla.VARCHAR(400))
     title = sqla.Column('title',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(300))
 
@@ -60,7 +60,7 @@ class Particepant(Base):
 class Media(Base):
     __tablename__ = 'media'
     event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
-    url = sqla.Column('url',sqla.VARCHAR(200))
+    url = sqla.Column('url',sqla.VARCHAR(400))
 
 
 
