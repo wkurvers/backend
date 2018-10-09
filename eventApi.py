@@ -80,6 +80,17 @@ def searchEvent(searchString):
 
 	return result
 
+def searchNews(searchString):
+	found = Persister.searchNews(searchString)
+	result = []
+	for newsName in found:
+		news = found[newsName]
+
+		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc']});
+
+	return result
+
+
 def getAllEvents():
     events = Persister.getAllEvents()
     if events != 400:
