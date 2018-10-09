@@ -143,7 +143,6 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-    print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -151,7 +150,6 @@ def createEvent():
                                                          data.get('description'),
                                                          data.get('leader'),
                                                          data.get('img'))})
-
 
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
@@ -167,7 +165,10 @@ def saveMedia():
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
-    return jsonify(eventApi.searchEvent(data.get("searchString")))
+    result = eventApi.searchEvent(data.get("searchString"))
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "events": result})
+    return jsonify({"responseCode": 400, "events": {} })
 
 
 ################################################################
