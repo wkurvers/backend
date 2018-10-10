@@ -470,6 +470,15 @@ class Persister():
         else:
             return {}
 
+    def getAllAdmins():
+        db = Session()
+        if db.query(Person).filter(Person.clearance == 1).count():
+            admins = db.query(Person).filter(Person.clearance == 1).all()
+            db.close()
+            return admins
+        else:
+            return {}
+
 
 
 

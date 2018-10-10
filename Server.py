@@ -158,11 +158,12 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
-  
+
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
+
 
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
@@ -234,12 +235,22 @@ def registerNormalUser():
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
+
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
+    return jsonify({"responseCode": 400, "events": {}})
+
+
+@app.route('/api/getAllAdmins', methods=['POST'])
+def getAdmins():
+    result = UserApi.getAllAdmins()
+    print(result)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "admins": result})
+    return jsonify({"responseCode": 400, "admins": {}})
 
 
 if __name__ == "__main__":
