@@ -92,8 +92,9 @@ def searchNews(searchString):
 
 def getAllEvents():
     events = Persister.getAllEvents()
+    result = []
     if events != 400:
-    	result = []
+    	
     	for event in events:
     	    leader = Persister.getLeader(event.leader)
     	    photo = Persister.getProfilePhoto(event.leader)
