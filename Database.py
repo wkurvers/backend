@@ -44,6 +44,7 @@ class Event(Base):
     created = sqla.Column('created',sqla.DATETIME)
     link = sqla.Column('link',sqla.VARCHAR(400))
 
+#hallo
 class Content(Base):
     __tablename__ = 'content'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
