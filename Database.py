@@ -50,6 +50,8 @@ class Content(Base):
     url = sqla.Column('url',sqla.VARCHAR(400))
     title = sqla.Column('title',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(300))
+    link = sqla.Column('link',sqla.VARCHAR(500))
+    created = sqla.Column('created',sqla.DATETIME)
 
 class Particepant(Base):
     __tablename__ = 'particepant'
@@ -204,6 +206,7 @@ class Persister():
 
     def searchEvent(searchString):
         db=Session()
+
         #define month numbers to translate user searchString if it contains months
         months = {
             "january" : '1',
@@ -322,7 +325,7 @@ class Persister():
                         eventEntry['qr_code'] = event.qr_code
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
-    
+
                         returnData[event.name] = eventEntry
         
         #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
@@ -342,7 +345,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
+
                 returnData[event.name] = eventEntry
         db.close()
         return returnData
@@ -482,6 +485,15 @@ class Persister():
             return 400
 
 
+    def getAllNewsItems():
+        db = Session()
+
+        if db.query(Content).count():
+            news = db.query(Content).all()
+            db.close()
+            return news
+        else:
+            return {}
 
 
 

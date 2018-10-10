@@ -30,6 +30,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   leader== '' or
 	   img==''):
 		return 400
+
 	event = Event(
 			name=name,
 			begin=begin,
@@ -81,20 +82,30 @@ def searchEvent(searchString):
 	return result
 
 def getAllEvents():
-    events = Persister.getAllEvents()
-    if events != 400:
-    	result = []
-    	for event in events:
-    	    leader = Persister.getLeader(event.leader)
-    	    photo = Persister.getProfilePhoto(event.leader)
-    	    createDate = event.created
-    	    created = createDate.strftime('%m/%d/%Y')
-    	    begin = event.begin
-    	    beginDay = begin.strftime('%d')
-    	    beginMonth = begin.strftime('%b')
-	
-    	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
-    	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-    	                   "created": created,"link":event.link,"photo":photo })
+	events = Persister.getAllEvents()
+	result = []
+	if events != 400:
+		for event in events:
+			leader = Persister.getLeader(event.leader)
+			photo = Persister.getProfilePhoto(event.leader)
+			createDate = event.created
+			created = createDate.strftime('%m/%d/%Y')
+			begin = event.begin
+			beginDay = begin.strftime('%d')
+			beginMonth = begin.strftime('%b')
 
-    return result
+			result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+						   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+						   "created": created,"link":event.link,"photo":photo })
+
+	return result
+
+def getAllNewsItems():
+	news = Persister.getAllNewsItems()
+
+	result = []
+	if news != 400:
+		for item in news:
+			result.append({"id": item.id, "url": item.url, "title": item.title,"desc": item.desc,"created": item.created,"link":item.link})
+
+	return result
