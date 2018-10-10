@@ -75,7 +75,8 @@ def registerSubmit(form, clearance):
             clearance=1,
             license=True,
             authenticated=False,
-            biography=form.get('biography')
+            biography=form.get('biography'),
+            profilePhoto=form.get('img')
         )
         return Persister.persist_object(person)
     else:
