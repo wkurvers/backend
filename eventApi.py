@@ -86,7 +86,7 @@ def searchNews(searchString):
 	for newsName in found:
 		news = found[newsName]
 
-		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc']});
+		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc'], 'created': news['created']});
 	return result
 
 
@@ -94,7 +94,6 @@ def getAllEvents():
     events = Persister.getAllEvents()
     result = []
     if events != 400:
-    	
     	for event in events:
     	    leader = Persister.getLeader(event.leader)
     	    photo = Persister.getProfilePhoto(event.leader)
