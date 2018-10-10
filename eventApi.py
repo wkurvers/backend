@@ -30,7 +30,6 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   leader== '' or
 	   img==''):
 		return 400
-
 	event = Event(
 			name=name,
 			begin=begin,
@@ -81,24 +80,35 @@ def searchEvent(searchString):
 
 	return result
 
-def getAllEvents():
-	events = Persister.getAllEvents()
+def searchNews(searchString):
+	found = Persister.searchNews(searchString)
 	result = []
-	if events != 400:
-		for event in events:
-			leader = Persister.getLeader(event.leader)
-			photo = Persister.getProfilePhoto(event.leader)
-			createDate = event.created
-			created = createDate.strftime('%m/%d/%Y')
-			begin = event.begin
-			beginDay = begin.strftime('%d')
-			beginMonth = begin.strftime('%b')
+	for newsName in found:
+		news = found[newsName]
 
-			result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
-						   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-						   "created": created,"link":event.link,"photo":photo })
-
+		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc']});
 	return result
+
+
+def getAllEvents():
+    events = Persister.getAllEvents()
+    result = []
+    if events != 400:
+    	
+    	for event in events:
+    	    leader = Persister.getLeader(event.leader)
+    	    photo = Persister.getProfilePhoto(event.leader)
+    	    createDate = event.created
+    	    created = createDate.strftime('%m/%d/%Y')
+    	    begin = event.begin
+    	    beginDay = begin.strftime('%d')
+    	    beginMonth = begin.strftime('%b')
+	
+    	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
+    	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+    	                   "created": created,"link":event.link,"photo":photo })
+
+    return result
 
 def getAllNewsItems():
 	news = Persister.getAllNewsItems()

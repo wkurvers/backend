@@ -8,6 +8,7 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
+from bs4 import BeautifulSoup as BSHTML
 
 import UserApi, LoginForm, eventApi, RegisterForm
 import sys, string, os, random
@@ -29,6 +30,26 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+
+
+
+@app.route('/api/createEventTrigger', methods=['GET'])
+def createEventTrigger():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+        print(image['src'])
+
+    return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
+                                                         data["start"],
+                                                         data["end"],
+                                                         'Peizerweg 48',
+                                                         data["content"]["rendered"],
+                                                         '1',
+                                                         img)})
 
 ################################################################
 # login/logout
@@ -181,6 +202,13 @@ def searchEvent():
 def createNews(emtpy):
     return None
 
+@app.route('/api/searchNews', methods=['POST'])
+def searchNews():
+    data = request.get_json()
+    result = eventApi.searchNews(data.get("searchString"))
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
 
 ################################################################
 # mentor
