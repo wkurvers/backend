@@ -11,6 +11,7 @@ def registerSubmit(form, clearance):
     lastName = form.get('lastName', None)
     email = form.get('email', None)
     password = form.get('password', None)
+    wordpresskey = form.get('wordpresskey', None)
 
     firstName = firstName.strip()
     lastName = lastName.strip()
@@ -73,6 +74,7 @@ def registerSubmit(form, clearance):
             password=password,
             points=0,
             clearance=1,
+            wordpresskey=wordpresskey,
             license=True,
             authenticated=False,
             biography=form.get('biography'),
