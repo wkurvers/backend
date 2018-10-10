@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256

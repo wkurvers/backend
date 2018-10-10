@@ -8,7 +8,6 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
-import requests
 from bs4 import BeautifulSoup as BSHTML
 
 import UserApi, LoginForm, eventApi, RegisterForm
