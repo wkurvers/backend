@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/master
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -31,11 +27,9 @@ class Person(Base,UserMixin):
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
-    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(100000))
-<<<<<<< HEAD
-=======
+    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
     wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
->>>>>>> upstream/master
+
 
 class Event(Base):
     __tablename__ = 'event'
@@ -47,11 +41,7 @@ class Event(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(200))
     leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
     cancel = sqla.Column('cancel',sqla.Integer)
-<<<<<<< HEAD
-    img = sqla.Column('img',sqla.VARCHAR(100000))
-=======
     img = sqla.Column('img',sqla.VARCHAR(400))
->>>>>>> upstream/master
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
     created = sqla.Column('created',sqla.DATETIME)
     link = sqla.Column('link',sqla.VARCHAR(400))
@@ -62,12 +52,8 @@ class Content(Base):
     url = sqla.Column('url',sqla.VARCHAR(400))
     title = sqla.Column('title',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(300))
-<<<<<<< HEAD
-=======
     link = sqla.Column('link',sqla.VARCHAR(500))
     created = sqla.Column('created',sqla.DATETIME)
-
->>>>>>> upstream/master
 
 class Particepant(Base):
     __tablename__ = 'particepant'
@@ -220,8 +206,7 @@ class Persister():
         db.close()
         return False
 
-<<<<<<< HEAD
-=======
+
     def searchNews(searchString):
         db=Session()
         #define month numbers to translate user searchString if it contains months
@@ -289,7 +274,6 @@ class Persister():
         return returnData
 
 
->>>>>>> upstream/master
     def searchEvent(searchString):
         db=Session()
         #define month numbers to translate user searchString if it contains months
@@ -343,11 +327,8 @@ class Persister():
                     eventsByEnd = db.query(Event).filter(Event.end.contains(monthNumber)).all()
             
         for event in eventsByBegin:
-<<<<<<< HEAD
-            if event.name not in returnData:
-=======
+
             if event.id not in returnData:
->>>>>>> upstream/master
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
@@ -363,17 +344,11 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
 
-<<<<<<< HEAD
-                returnData[event.name] = eventEntry
 
-        for event in eventsByEnd:
-            if event.name not in returnData:
-=======
                 returnData[event.id] = eventEntry
 
         for event in eventsByEnd:
             if event.id not in returnData:
->>>>>>> upstream/master
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
@@ -389,11 +364,7 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
 
-<<<<<<< HEAD
-                returnData[event.name] = eventEntry
-=======
                 returnData[event.id] = eventEntry
->>>>>>> upstream/master
 
         #loop through query result and add the person to the leaders dict if it isn't there already
         for person in personsFirstName:
@@ -411,11 +382,8 @@ class Persister():
             if db.query(Event).filter(Event.leader == person.id).count():
                 events = db.query(Event).filter(Event.leader == person.id).all()
                 for event in events:
-<<<<<<< HEAD
-                    if event.name not in returnData:
-=======
+
                     if event.id not in returnData:
->>>>>>> upstream/master
                         eventEntry = {}
                         eventEntry['id'] = event.id
                         eventEntry['name'] = event.name
@@ -430,20 +398,14 @@ class Persister():
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
     
-<<<<<<< HEAD
-                        returnData[event.name] = eventEntry
-=======
+
                         returnData[event.id] = eventEntry
->>>>>>> upstream/master
-        
+
         #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
         for event in eventsName:
             eventEntry = {}
-<<<<<<< HEAD
-            if event.name not in returnData:
-=======
+
             if event.id not in returnData:
->>>>>>> upstream/master
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
@@ -458,11 +420,8 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
     
-<<<<<<< HEAD
-                returnData[event.name] = eventEntry
-=======
+
                 returnData[event.id] = eventEntry
->>>>>>> upstream/master
         db.close()
         return returnData
 
@@ -600,7 +559,6 @@ class Persister():
         else:
             return 400
 
-<<<<<<< HEAD
 
     def getAllAdmins():
         db = Session()
@@ -612,7 +570,6 @@ class Persister():
             return {}
 
 
-=======
     def getAllNewsItems():
         db = Session()
 
@@ -623,5 +580,4 @@ class Persister():
         else:
             return {}
 
->>>>>>> upstream/master
 Base.metadata.create_all(conn)

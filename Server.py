@@ -8,10 +8,8 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
-<<<<<<< HEAD
-=======
+
 from bs4 import BeautifulSoup as BSHTML
->>>>>>> upstream/master
 
 import UserApi, LoginForm, eventApi, RegisterForm
 import sys, string, os, random
@@ -34,9 +32,6 @@ def route(path):
     return render_template('index.html')
 
 
-<<<<<<< HEAD
-=======
-
 
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
@@ -56,7 +51,6 @@ def createEventTrigger():
                                                          '1',
                                                          img)})
 
->>>>>>> upstream/master
 ################################################################
 # login/logout
 ################################################################
@@ -170,10 +164,8 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-<<<<<<< HEAD
-=======
+
     print(data)
->>>>>>> upstream/master
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -182,10 +174,7 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
-<<<<<<< HEAD
-=======
 
->>>>>>> upstream/master
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
@@ -210,12 +199,16 @@ def searchEvent():
 # news
 ################################################################
 
-@app.route('/api/createNews', methods=['POST'])
-def createNews(emtpy):
-    return None
+@app.route('/api/createNewsItem', methods=['POST'])
+def createNewsItem():
+    data = request.get_json()
 
-<<<<<<< HEAD
-=======
+    print(data)
+    return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
+                                                         data.get('content'),
+                                                         data.get('img'))})
+
+
 @app.route('/api/searchNews', methods=['POST'])
 def searchNews():
     data = request.get_json()
@@ -223,7 +216,6 @@ def searchNews():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {} })
->>>>>>> upstream/master
 
 ################################################################
 # mentor
@@ -287,7 +279,6 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
 
-<<<<<<< HEAD
 
 @app.route('/api/getAllAdmins', methods=['POST'])
 def getAdmins():
@@ -298,10 +289,6 @@ def getAdmins():
     return jsonify({"responseCode": 400, "admins": {}})
 
 
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
-=======
 @app.route('/api/getAllNewsItems', methods=['GET'])
 def getNews():
     result =  eventApi.getAllNewsItems()
@@ -311,4 +298,3 @@ def getNews():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
->>>>>>> upstream/master

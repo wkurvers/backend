@@ -1,4 +1,5 @@
-from Database import Persister
+from Database import Persister, Content
+import datetime
 
 
 def getPerson(person_id):
@@ -60,3 +61,18 @@ def getAllAdmins():
             result.append({"id": admin.id, "firstName": admin.firstname, "lastName": admin.lastname})
 
     return result
+
+
+def createNewsItem(title, content, img):
+    if (title == '' or
+            content == '' or
+            img == ''):
+        return 400
+    item = Content(
+        url=img,
+        title=title,
+        desc=content,
+        link=None,
+        created=datetime.datetime.now()
+    )
+    return Persister.persist_object(item)
