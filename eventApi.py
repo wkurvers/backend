@@ -80,6 +80,7 @@ def searchEvent(searchString):
 
 	return result
 
+
 def searchNews(searchString):
 	found = Persister.searchNews(searchString)
 	result = []
@@ -108,6 +109,7 @@ def getAllEvents():
     	                   "created": created,"link":event.link,"photo":photo })
 
     return result
+
 
 def getAllNewsItems():
 	news = Persister.getAllNewsItems()
