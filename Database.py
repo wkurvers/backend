@@ -50,6 +50,8 @@ class Content(Base):
     url = sqla.Column('url',sqla.VARCHAR(200))
     title = sqla.Column('title',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(300))
+    link = sqla.Column('link',sqla.VARCHAR(500))
+    created = sqla.Column('created',sqla.DATETIME)
 
 class Particepant(Base):
     __tablename__ = 'particepant'
