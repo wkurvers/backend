@@ -143,7 +143,6 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-    print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -152,23 +151,24 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
-
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
-
+  
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
-
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
-    return jsonify(eventApi.searchEvent(data.get("searchString")))
+    result = eventApi.searchEvent(data.get("searchString"))
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "events": result})
+    return jsonify({"responseCode": 400, "events": {} })
 
 
 ################################################################
@@ -235,13 +235,12 @@ def registerNormalUser():
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
-
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {}})
+    return jsonify({"responseCode": 400, "events": {} })
 
 
 @app.route('/api/getAllAdmins', methods=['POST'])
@@ -251,6 +250,7 @@ def getAdmins():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "admins": result})
     return jsonify({"responseCode": 400, "admins": {}})
+
 
 
 if __name__ == "__main__":
