@@ -1,3 +1,4 @@
+
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -51,7 +52,9 @@ class Content(Base):
     url = sqla.Column('url',sqla.VARCHAR(400))
     title = sqla.Column('title',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(300))
-    created_at = sqla.Column('created_at', sqla.DATETIME)
+    link = sqla.Column('link',sqla.VARCHAR(500))
+    created = sqla.Column('created',sqla.DATETIME)
+
 
 class Particepant(Base):
     __tablename__ = 'particepant'
@@ -559,4 +562,5 @@ class Persister():
             return news
         else:
             return {}
+
 Base.metadata.create_all(conn)
