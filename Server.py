@@ -8,6 +8,8 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
+import requests
+from bs4 import BeautifulSoup as BSHTML
 
 import UserApi, LoginForm, eventApi, RegisterForm
 import sys, string, os, random
@@ -29,6 +31,26 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+
+
+
+@app.route('/api/createEventTrigger', methods=['GET'])
+def createEventTrigger():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+        print(image['src'])
+
+    return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
+                                                         data["start"],
+                                                         data["end"],
+                                                         'Peizerweg 48',
+                                                         data["content"]["rendered"],
+                                                         '1',
+                                                         img)})
 
 ################################################################
 # login/logout
@@ -143,6 +165,7 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
+    print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -150,6 +173,7 @@ def createEvent():
                                                          data.get('description'),
                                                          data.get('leader'),
                                                          data.get('img'))})
+
 
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
@@ -249,6 +273,12 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
 
+@app.route('/api/getAllNewsItems', methods=['GET'])
+def getNews():
+    result =  eventApi.getAllNewsItems()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0', debug=True)

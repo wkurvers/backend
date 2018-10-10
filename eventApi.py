@@ -108,3 +108,13 @@ def getAllEvents():
     	                   "created": created,"link":event.link,"photo":photo })
 
     return result
+
+def getAllNewsItems():
+	news = Persister.getAllNewsItems()
+
+	result = []
+	if news != 400:
+		for item in news:
+			result.append({"id": item.id, "url": item.url, "title": item.title,"desc": item.desc,"created": item.created,"link":item.link})
+
+	return result

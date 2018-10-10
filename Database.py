@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -27,7 +28,8 @@ class Person(Base,UserMixin):
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
-    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(100000))
+    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
+    wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
 
 class Event(Base):
     __tablename__ = 'event'
@@ -39,7 +41,7 @@ class Event(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(200))
     leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
     cancel = sqla.Column('cancel',sqla.Integer)
-    img = sqla.Column('img',sqla.VARCHAR(100000))
+    img = sqla.Column('img',sqla.VARCHAR(400))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
     created = sqla.Column('created',sqla.DATETIME)
     link = sqla.Column('link',sqla.VARCHAR(400))
@@ -549,8 +551,13 @@ class Persister():
         else:
             return 400
 
+    def getAllNewsItems():
+        db = Session()
 
-
-
-
+        if db.query(Content).count():
+            news = db.query(Content).all()
+            db.close()
+            return news
+        else:
+            return {}
 Base.metadata.create_all(conn)
