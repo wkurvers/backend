@@ -29,7 +29,7 @@ class Person(Base,UserMixin):
     license = sqla.Column('license',sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
-    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(100000))
+    profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
     wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
 
 class Event(Base):
