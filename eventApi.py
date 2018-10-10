@@ -87,7 +87,6 @@ def searchNews(searchString):
 		news = found[newsName]
 
 		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc']});
-
 	return result
 
 

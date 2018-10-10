@@ -179,13 +179,13 @@ def searchEvent():
 def createNews(emtpy):
     return None
 
-@app.route('/api/searchNew', methods=['POST'])
+@app.route('/api/searchNews', methods=['POST'])
 def searchNews():
     data = request.get_json()
     result = eventApi.searchNews(data.get("searchString"))
     if len(result) > 0:
-        return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
 
 ################################################################
 # mentor
@@ -251,4 +251,4 @@ def getEvents():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0',debug=True)
