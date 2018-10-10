@@ -5,6 +5,7 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy import extract
 from flask_login import UserMixin
 import checks
 import re
@@ -66,9 +67,6 @@ class Media(Base):
     __tablename__ = 'media'
     event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
     url = sqla.Column('url',sqla.VARCHAR(400))
-
-
-
 
 class Persister():
     def getPerson(id):
@@ -242,20 +240,22 @@ class Persister():
                     if len(numbers) > 1:
                         yearNumber = numbers[1] + '-'
                     dateString = yearNumber + monthNumber + "-" + dayNumber
-                    newsByDate = db.query(Content).filter(Content.created_at.contains(dateString)).all()
+                    newsByDate = db.query(Content).filter(Content.created.contains(dateString)).all()
                 else:
-                    newsByDate = db.query(Content).filter(Content.created_at.contains(monthNumber)).all()
+                    newsByDate = db.query(Content).filter(extract('month', Content.created) == monthNumber).all()
 
         #get all the news items whose title contain the search string
         newsName = db.query(Content).filter(Content.title.contains(searchString)).all()
 
         for news in newsByDate:
             if news.id not in returnData:
+                print(news.title)
                 newsEntry = {}
                 newsEntry['id'] = news.id
                 newsEntry['title'] = news.title
                 newsEntry['url'] = news.url
                 newsEntry['desc'] = news.desc
+                newsEntry['created'] = news.created
 
                 returnData[news.id] = newsEntry
 
@@ -267,6 +267,7 @@ class Persister():
                 newsEntry['title'] = news.title
                 newsEntry['url'] = news.url
                 newsEntry['desc'] = news.desc
+                newsEntry['created'] = news.created
 
                 returnData[news.id] = newsEntry
 
@@ -323,8 +324,8 @@ class Persister():
                     eventsByBegin = db.query(Event).filter(Event.begin.contains(dateString)).all()
                     eventsByEnd = db.query(Event).filter(Event.end.contains(dateString)).all()
                 else:
-                    eventsByBegin = db.query(Event).filter(Event.begin.contains(monthNumber)).all()
-                    eventsByEnd = db.query(Event).filter(Event.end.contains(monthNumber)).all()
+                    eventsByBegin = db.query(Event).filter(extract('month', Event.Begin) == monthNumber).all()
+                    eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
             
         for event in eventsByBegin:
             if event.id not in returnData:
