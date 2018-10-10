@@ -1,3 +1,4 @@
+
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -28,6 +29,7 @@ class Person(Base,UserMixin):
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(100000))
+    wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
 
 class Event(Base):
     __tablename__ = 'event'
@@ -39,12 +41,11 @@ class Event(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(200))
     leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
     cancel = sqla.Column('cancel',sqla.Integer)
-    img = sqla.Column('img',sqla.VARCHAR(100000))
+    img = sqla.Column('img',sqla.VARCHAR(400))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
     created = sqla.Column('created',sqla.DATETIME)
     link = sqla.Column('link',sqla.VARCHAR(400))
 
-#hallo
 class Content(Base):
     __tablename__ = 'content'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
@@ -53,6 +54,7 @@ class Content(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(300))
     link = sqla.Column('link',sqla.VARCHAR(500))
     created = sqla.Column('created',sqla.DATETIME)
+
 
 class Particepant(Base):
     __tablename__ = 'particepant'
@@ -205,9 +207,75 @@ class Persister():
         db.close()
         return False
 
+    def searchNews(searchString):
+        db=Session()
+        #define month numbers to translate user searchString if it contains months
+        months = {
+            "january" : '1',
+            "february" : '2',
+            "maart" : '3',
+            "april" : '4',
+            "mei" : '5',
+            "juni" : '6',
+            "juli" : '7',
+            "augustus" : '8',
+            "september" : '9',
+            "oktober" : '10',
+            "november" : '11',
+            "december" : '12'
+        }
+        returnData = {}
+        newsByName = {}
+        newsByDate = {}
+
+        #Convert the user query to a date query
+        for month in months:
+            if month in searchString.lower():
+                #searchString is a date query
+                monthNumber = months[month]
+                if any(char.isdigit() for char in searchString):
+                    numbers = re.findall(r'\d+', searchString)
+                    dayNumber = numbers[0]
+                    if int(dayNumber) < 10:
+                        dayNumber = "0" + dayNumber
+                    yearNumber = ''
+                    if len(numbers) > 1:
+                        yearNumber = numbers[1] + '-'
+                    dateString = yearNumber + monthNumber + "-" + dayNumber
+                    newsByDate = db.query(Content).filter(Content.created_at.contains(dateString)).all()
+                else:
+                    newsByDate = db.query(Content).filter(Content.created_at.contains(monthNumber)).all()
+
+        #get all the news items whose title contain the search string
+        newsName = db.query(Content).filter(Content.title.contains(searchString)).all()
+
+        for news in newsByDate:
+            if news.id not in returnData:
+                newsEntry = {}
+                newsEntry['id'] = news.id
+                newsEntry['title'] = news.title
+                newsEntry['url'] = news.url
+                newsEntry['desc'] = news.desc
+
+                returnData[news.id] = newsEntry
+
+        #loop through all the news items whose title contain the search string and add them to the returnData if it isn't already there
+        for news in newsName:
+            if news.id not in returnData:
+                newsEntry = {}
+                newsEntry['id'] = news.id
+                newsEntry['title'] = news.title
+                newsEntry['url'] = news.url
+                newsEntry['desc'] = news.desc
+
+                returnData[news.id] = newsEntry
+
+        db.close()
+        return returnData
+
+
     def searchEvent(searchString):
         db=Session()
-
         #define month numbers to translate user searchString if it contains months
         months = {
             "january" : '1',
@@ -259,7 +327,7 @@ class Persister():
                     eventsByEnd = db.query(Event).filter(Event.end.contains(monthNumber)).all()
             
         for event in eventsByBegin:
-            if event.name not in returnData:
+            if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
@@ -275,10 +343,10 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
 
-                returnData[event.name] = eventEntry
+                returnData[event.id] = eventEntry
 
         for event in eventsByEnd:
-            if event.name not in returnData:
+            if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
@@ -294,7 +362,7 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
 
-                returnData[event.name] = eventEntry
+                returnData[event.id] = eventEntry
 
         #loop through query result and add the person to the leaders dict if it isn't there already
         for person in personsFirstName:
@@ -312,7 +380,7 @@ class Persister():
             if db.query(Event).filter(Event.leader == person.id).count():
                 events = db.query(Event).filter(Event.leader == person.id).all()
                 for event in events:
-                    if event.name not in returnData:
+                    if event.id not in returnData:
                         eventEntry = {}
                         eventEntry['id'] = event.id
                         eventEntry['name'] = event.name
@@ -326,13 +394,13 @@ class Persister():
                         eventEntry['qr_code'] = event.qr_code
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
-
-                        returnData[event.name] = eventEntry
+    
+                        returnData[event.id] = eventEntry
         
         #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
         for event in eventsName:
             eventEntry = {}
-            if event.name not in returnData:
+            if event.id not in returnData:
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
@@ -346,8 +414,8 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-
-                returnData[event.name] = eventEntry
+    
+                returnData[event.id] = eventEntry
         db.close()
         return returnData
 
@@ -485,7 +553,6 @@ class Persister():
         else:
             return 400
 
-
     def getAllNewsItems():
         db = Session()
 
@@ -495,7 +562,5 @@ class Persister():
             return news
         else:
             return {}
-
-
 
 Base.metadata.create_all(conn)
