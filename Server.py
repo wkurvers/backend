@@ -8,6 +8,10 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
+<<<<<<< HEAD
+=======
+from bs4 import BeautifulSoup as BSHTML
+>>>>>>> upstream/master
 
 import UserApi, LoginForm, eventApi, RegisterForm
 import sys, string, os, random
@@ -30,6 +34,29 @@ def route(path):
     return render_template('index.html')
 
 
+<<<<<<< HEAD
+=======
+
+
+@app.route('/api/createEventTrigger', methods=['GET'])
+def createEventTrigger():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+        print(image['src'])
+
+    return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
+                                                         data["start"],
+                                                         data["end"],
+                                                         'Peizerweg 48',
+                                                         data["content"]["rendered"],
+                                                         '1',
+                                                         img)})
+
+>>>>>>> upstream/master
 ################################################################
 # login/logout
 ################################################################
@@ -143,6 +170,10 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
+<<<<<<< HEAD
+=======
+    print(data)
+>>>>>>> upstream/master
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -151,6 +182,10 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
@@ -179,6 +214,16 @@ def searchEvent():
 def createNews(emtpy):
     return None
 
+<<<<<<< HEAD
+=======
+@app.route('/api/searchNews', methods=['POST'])
+def searchNews():
+    data = request.get_json()
+    result = eventApi.searchNews(data.get("searchString"))
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
+>>>>>>> upstream/master
 
 ################################################################
 # mentor
@@ -242,6 +287,7 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
 
+<<<<<<< HEAD
 
 @app.route('/api/getAllAdmins', methods=['POST'])
 def getAdmins():
@@ -255,3 +301,14 @@ def getAdmins():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+=======
+@app.route('/api/getAllNewsItems', methods=['GET'])
+def getNews():
+    result =  eventApi.getAllNewsItems()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True)
+>>>>>>> upstream/master

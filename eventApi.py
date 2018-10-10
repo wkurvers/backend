@@ -80,10 +80,28 @@ def searchEvent(searchString):
 
 	return result
 
+<<<<<<< HEAD
 def getAllEvents():
     events = Persister.getAllEvents()
     if events != 400:
     	result = []
+=======
+def searchNews(searchString):
+	found = Persister.searchNews(searchString)
+	result = []
+	for newsName in found:
+		news = found[newsName]
+
+		result.append({"id": news['id'], "url": news['url'], 'title': news['title'], 'desc': news['desc']});
+	return result
+
+
+def getAllEvents():
+    events = Persister.getAllEvents()
+    result = []
+    if events != 400:
+    	
+>>>>>>> upstream/master
     	for event in events:
     	    leader = Persister.getLeader(event.leader)
     	    photo = Persister.getProfilePhoto(event.leader)
@@ -99,3 +117,15 @@ def getAllEvents():
 
     return result
 
+<<<<<<< HEAD
+=======
+def getAllNewsItems():
+	news = Persister.getAllNewsItems()
+
+	result = []
+	if news != 400:
+		for item in news:
+			result.append({"id": item.id, "url": item.url, "title": item.title,"desc": item.desc,"created": item.created,"link":item.link})
+
+	return result
+>>>>>>> upstream/master
