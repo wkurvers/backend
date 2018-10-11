@@ -107,8 +107,8 @@ def changeMail():
         server.login('bslim@grombouts.nl', "bslim")
         server.sendmail('bslim@grombouts.nl', oldEmail, msg.as_string())
         server.quit()
-        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail})
-    return jsonify({'responseCode': 400, 'msg': 'Could not generate security code'})
+        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
 
 @app.route('/changeUserEmail', methods=['POST'])
 def changeUserEmail():

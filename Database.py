@@ -10,6 +10,7 @@ from flask_login import UserMixin
 import checks
 import re
 import random, string
+import hashlib
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
@@ -425,8 +426,8 @@ class Persister():
     def savePassword(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
-
-        person.password = password
+        hashedNewPassword = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        person.password = hashedNewPassword
 
         db.commit()
         db.close()
