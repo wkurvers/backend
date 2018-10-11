@@ -9,6 +9,7 @@ from sqlalchemy import extract
 from flask_login import UserMixin
 import checks
 import re
+import random, string
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
@@ -31,6 +32,7 @@ class Person(Base,UserMixin):
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
     wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
+    securityCode = sqla.Column('securityCode', sqla.VARCHAR(5))
 
 class Event(Base):
     __tablename__ = 'event'
@@ -433,19 +435,46 @@ class Persister():
     def changePassword(id, oldPassword, newPassword):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-        # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
-        hashedNewPassword = newPassword
         if person.password == oldPassword:
-            if checks.emptyCheck([newPassword]) or len(newPassword) < 5 or person.password == hashedNewPassword:
+            if checks.emptyCheck([newPassword]) or len(newPassword) < 5 or person.password == newPassword:
                 return 400
             else:
-                person.password = hashedNewPassword
+                person.password = newPassword
     
                 db.commit()
                 db.close()
                 return 200
         return 400
 
+    def changeEmail(id):
+        db = Session()
+        user = db.query(Person).filter(Person.id == id).first()
+        secCode = ''.join(random.choice(string.ascii_uppercase) for _ in range(5))
+        user.securityCode = secCode
+        db.commit()
+        db.close()
+        return 200
+
+    def checkSecCode(oldEmail, secCode):
+        db = Session()
+        userSecCode = db.query(Person.securityCode).filter(Person.email == oldEmail).first()[0]
+        db.close()
+        print(userSecCode)
+        print(secCode)
+        if secCode == userSecCode:
+            return True
+        return False
+
+    def changeUserEmail(oldEmail, newEmail):
+        db = Session()
+        user = db.query(Person).filter(Person.email == oldEmail).first()
+        print(user.email)
+        user.email = newEmail
+        user.secCode = None
+        db.commit()
+        print(user.email)
+        db.close()
+        return 200
 
     def checkPoints(id):
         db = Session()

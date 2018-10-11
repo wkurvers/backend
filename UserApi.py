@@ -22,6 +22,15 @@ def saveNewPassword(temp,email):
 def changePassword(id, oldPassword, newPassword):
     return Persister.changePassword(id, oldPassword, newPassword)
 
+def changeEmail(id):
+    return Persister.changeEmail(id)
+
+def checkSecCode(oldEmail, secCode):
+    return Persister.checkSecCode(oldEmail, secCode)
+
+def changeUserEmail(oldEmail, newEmail):
+    return Persister.changeUserEmail(oldEmail, newEmail)
+
 def checkPoints(id):
     return Persister.checkPoints(id)
 
