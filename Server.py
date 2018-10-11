@@ -139,7 +139,7 @@ def changeUserEmail():
         server.sendmail('bslim@grombouts.nl', newEmail, msg.as_string())
         server.quit()
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
-    return jsonify({'responseCode': 400, 'msg': 'Could not change e-mail address'})
+    return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
@@ -183,7 +183,6 @@ def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
 def changePassword():
     data = request.get_json()
     id = data.get('id')
-    print(id)
     oldPassword = data.get('oldPassword')
     newPassword = data.get('newPassword')
     return jsonify({"responseCode": UserApi.changePassword(id, oldPassword, newPassword)})

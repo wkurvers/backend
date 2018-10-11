@@ -469,11 +469,9 @@ class Persister():
     def changeUserEmail(oldEmail, newEmail):
         db = Session()
         user = db.query(Person).filter(Person.email == oldEmail).first()
-        print(user.email)
-        user.email = newEmail
-        user.secCode = None
+        user.email = newEmail.lower()
+        user.securityCode = None
         db.commit()
-        print(user.email)
         db.close()
         return 200
 
