@@ -305,6 +305,7 @@ class Persister():
 
         #query the db on event names containging the search string
         eventsName = db.query(Event).filter(Event.name.contains(searchString)).all()
+        eventsLocation = db.query(Event).filter(Event.location.contains(searchString)).all()
 
         #query the db for persons whose first and/or last name contain the search string
         personsFirstName = db.query(Person).filter(Person.firstname.contains(searchString)).all()
@@ -403,6 +404,25 @@ class Persister():
         
         #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
         for event in eventsName:
+            eventEntry = {}
+            if event.id not in returnData:
+                person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['id'] = event.id
+                eventEntry['name'] = event.name
+                eventEntry['begin'] = event.begin
+                eventEntry['end'] = event.end
+                eventEntry['location'] = event.location
+                eventEntry['desc'] = event.desc
+                eventEntry['leader'] = person.id
+                eventEntry['cancel'] = event.cancel
+                eventEntry['img'] = event.img
+                eventEntry['qr_code'] = event.qr_code
+                eventEntry['created'] = event.created
+                eventEntry['link'] = event.link
+    
+                returnData[event.id] = eventEntry
+
+        for event in eventsLocation:
             eventEntry = {}
             if event.id not in returnData:
                 person = db.query(Person).filter(Person.id == event.leader).first()
