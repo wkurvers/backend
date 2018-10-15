@@ -2,7 +2,8 @@ import sys, UserApi
 from flask_login import login_user, current_user
 from passlib.hash import pbkdf2_sha256
 from Database import Persister, Person
-
+import requests
+import json
 
 def loginUser(form):
     emailLogin = form.get('email')

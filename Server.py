@@ -41,8 +41,17 @@ def createEventTrigger():
     img = " "
     for image in images:
         img = image['src']
-        print(image['src'])
-
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                  "Authorization": "Basic " + apiKey}
+        
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuw evenement van Bslim!"}
+               "headings": {"en": data['title']['rendered']}
+     
+    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
                                                          data["start"],
                                                          data["end"],
