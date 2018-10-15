@@ -8,6 +8,7 @@ from email.message import EmailMessage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
+
 from bs4 import BeautifulSoup as BSHTML
 
 import UserApi, LoginForm, eventApi, RegisterForm
@@ -29,7 +30,6 @@ def load_user(person_id):
 @app.route('/<path:path>')
 def route(path):
     return render_template('index.html')
-
 
 
 
@@ -232,6 +232,7 @@ def resetStampCard():
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
+
     print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
@@ -266,9 +267,15 @@ def searchEvent():
 # news
 ################################################################
 
-@app.route('/api/createNews', methods=['POST'])
-def createNews(emtpy):
-    return None
+@app.route('/api/createNewsItem', methods=['POST'])
+def createNewsItem():
+    data = request.get_json()
+
+    print(data)
+    return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
+                                                         data.get('content'),
+                                                         data.get('img'))})
+
 
 @app.route('/api/searchNews', methods=['POST'])
 def searchNews():
@@ -339,6 +346,16 @@ def getEvents():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
+
+
+@app.route('/api/getAllAdmins', methods=['POST'])
+def getAdmins():
+    result = UserApi.getAllAdmins()
+    print(result)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "admins": result})
+    return jsonify({"responseCode": 400, "admins": {}})
+
 
 @app.route('/api/getAllNewsItems', methods=['GET'])
 def getNews():
