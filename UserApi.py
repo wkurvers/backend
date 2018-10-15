@@ -38,10 +38,8 @@ def checkPoints(id):
 def addPoints(id):
     return Persister.addPoints(id)
 
-
 def substractPoint(id):
     return Persister.substractPoint(id)
-
 
 def resetStampCard(id):
     return Persister.resetStampCard(id)
