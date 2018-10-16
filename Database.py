@@ -179,12 +179,9 @@ class Persister():
     # Checks whether or not a particepant entry or beloging events and persons already exists
     def checkParticepant(eventId, personId):
         db = Session()
-        print(db.query(Event).filter(Event.id == eventId).count());
-        print(db.query(Person).filter(Person.id == personId).count());
         if(db.query(Event).filter(Event.id == eventId).count()):
                 if(db.query(Person).filter(Person.id == personId).count()):
                     if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
-                        print("returning true")
                         db.close()
                         return True
         db.close()
@@ -509,8 +506,6 @@ class Persister():
         db = Session()
         userSecCode = db.query(Person.securityCode).filter(Person.email == oldEmail).first()[0]
         db.close()
-        print(userSecCode)
-        print(secCode)
         if secCode == userSecCode:
             return True
         return False

@@ -4,6 +4,18 @@ from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from flask import jsonify
 import datetime
 
+months = {'Jan': 'Jan', 
+		  'Feb': 'Feb', 
+		  'Mar': 'Mrt', 
+		  'Apr': 'Apr', 
+		  'May': 'Mei', 
+		  'Jun': 'Jun', 
+		  'Jul': 'Jul', 
+		  'Aug': 'Aug', 
+		  'Sep': 'Sep', 
+		  'Oct': 'Okt', 
+		  'Nov': 'Nov', 
+		  'Dec': 'Dec'};
 
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
@@ -87,8 +99,13 @@ def searchEvent(searchString):
 		begin = event['begin']
 		beginDay = begin.strftime('%d')
 		beginMonth = begin.strftime('%b')
+		beginTime = begin.strftime('%H:%M')
 
-		result.append({"id": event['id'], "name": event['name'], "begin": beginDay,"beginMonth": beginMonth,"end": event['end'],
+		end = event['end']
+		endDay = end.strftime('%d')
+		endMonth = end.strftime('%b')
+		endTime = end.strftime('%H:%M')
+		result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth], "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
     	               "location": event['location'], "desc": event['desc'], "leader": leader, "cancel": event['cancel'], "img": event['img'],"qrCode": event['qr_code'],
     	               "created": created,"link":event['link'],"photo":photo, "subscribed": None });
 
@@ -106,23 +123,30 @@ def searchNews(searchString):
 
 
 def getAllEvents():
-    events = Persister.getAllEvents()
-    result = []
-    if events != 400:
-    	for event in events:
-    	    leader = Persister.getLeader(event.leader)
-    	    photo = Persister.getProfilePhoto(event.leader)
-    	    createDate = event.created
-    	    created = createDate.strftime('%m/%d/%Y')
-    	    begin = event.begin
-    	    beginDay = begin.strftime('%d')
-    	    beginMonth = begin.strftime('%b')
-	
-    	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
-    	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-    	                   "created": created,"link":event.link,"photo":photo, "subscribed": None  })
+	events = Persister.getAllEvents()
+	result = []
+	if events != 400:
+		for event in events:
+			leader = Persister.getLeader(event.leader)
+			photo = Persister.getProfilePhoto(event.leader)
+			createDate = event.created
+			created = createDate.strftime('%m/%d/%Y')
+			
+			begin = event.begin
+			beginDay = begin.strftime('%d')
+			beginMonth = begin.strftime('%b')
+			beginTime = begin.strftime('%H:%M')
 
-    return result
+			end = event.end
+			endDay = end.strftime('%d')
+			endMonth = end.strftime('%b')
+			endTime = end.strftime('%H:%M')
+			
+			result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": months[beginMonth], "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
+							"location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
+							"created": created,"link":event.link,"photo":photo, "subscribed": None  })
+	
+	return result
 
 
 def getAllNewsItems():
