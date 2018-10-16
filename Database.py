@@ -1,4 +1,3 @@
-
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -32,6 +31,7 @@ class Person(Base,UserMixin):
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
     wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
 
+
 class Event(Base):
     __tablename__ = 'event'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
@@ -55,7 +55,6 @@ class Content(Base):
     desc = sqla.Column('desc',sqla.VARCHAR(300))
     link = sqla.Column('link',sqla.VARCHAR(500))
     created = sqla.Column('created',sqla.DATETIME)
-
 
 class Particepant(Base):
     __tablename__ = 'particepant'
@@ -205,6 +204,7 @@ class Persister():
         db.close()
         return False
 
+
     def searchNews(searchString):
         db=Session()
         #define month numbers to translate user searchString if it contains months
@@ -328,6 +328,7 @@ class Persister():
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
             
         for event in eventsByBegin:
+
             if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.id == event.leader).first()
@@ -343,6 +344,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
+
 
                 returnData[event.id] = eventEntry
 
@@ -381,6 +383,7 @@ class Persister():
             if db.query(Event).filter(Event.leader == person.id).count():
                 events = db.query(Event).filter(Event.leader == person.id).all()
                 for event in events:
+
                     if event.id not in returnData:
                         eventEntry = {}
                         eventEntry['id'] = event.id
@@ -396,11 +399,13 @@ class Persister():
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
     
+
                         returnData[event.id] = eventEntry
-        
+
         #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
         for event in eventsName:
             eventEntry = {}
+
             if event.id not in returnData:
                 person = db.query(Person).filter(Person.id == event.leader).first()
                 eventEntry['id'] = event.id
@@ -416,6 +421,7 @@ class Persister():
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
     
+
                 returnData[event.id] = eventEntry
         db.close()
         return returnData
@@ -552,6 +558,17 @@ class Persister():
             return events
         else:
             return 400
+
+
+    def getAllAdmins():
+        db = Session()
+        if db.query(Person).filter(Person.clearance == 1).count():
+            admins = db.query(Person).filter(Person.clearance == 1).all()
+            db.close()
+            return admins
+        else:
+            return {}
+
 
     def getAllNewsItems():
         db = Session()
