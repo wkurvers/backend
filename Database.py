@@ -134,6 +134,20 @@ class Persister():
         db.close()
         return 200
 
+    def remove_object(obj):
+        db = Session()
+        print("hallo");
+        try:
+            print("trying to delete");
+            db.delete(obj)
+            db.commit()
+            print("deleted");
+        except:
+            db.close()
+            return 400
+        db.close()
+        return 200 
+
     # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId,personId):
@@ -165,13 +179,22 @@ class Persister():
     # Checks whether or not a particepant entry or beloging events and persons already exists
     def checkParticepant(eventId, personId):
         db = Session()
+        print(db.query(Event).filter(Event.id == eventId).count());
+        print(db.query(Person).filter(Person.id == personId).count());
         if(db.query(Event).filter(Event.id == eventId).count()):
                 if(db.query(Person).filter(Person.id == personId).count()):
                     if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
+                        print("returning true")
                         db.close()
                         return True
         db.close()
         return False
+
+    def getParticepant(eventId, personId):
+        db = Session()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
+        db.close()
+        return participant
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):

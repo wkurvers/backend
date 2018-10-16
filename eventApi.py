@@ -55,8 +55,22 @@ def subToEvent(eventId, personId):
 		if Persister.persist_object(particepant) == 200:
 			return ({"responseCode": 200, "msg": "Added particepant entry."})
 		else:
-			return ({"responseCode": 400, "msg": "Could not add entry due to db error."})
+			return ({"responseCode": 500, "msg": "Could not add entry due to db error."})
 	return ({"responseCode": 400, "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
+
+def findSub(eventId, personId):
+	return ({"found": Persister.checkParticepant(eventId, personId)})
+
+def unSubToEvent(eventId, personId):
+	if Persister.checkParticepant(eventId, personId):
+		print("particepant exists")
+		particepant = Persister.getParticepant(eventId, personId)
+		print(particepant)
+		if Persister.remove_object(particepant) == 200:
+			return ({"responseCode": 200, "msg": "Removed particepant entry."})
+		else:
+			return ({"responseCode": 500, "msg": "Could not remove entry due to db error."})
+	return ({"responseCode": 400, "msg": "Could not remove participant entry because either some of the given data did not match or the entry does not exists."})
 
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
@@ -76,7 +90,7 @@ def searchEvent(searchString):
 
 		result.append({"id": event['id'], "name": event['name'], "begin": beginDay,"beginMonth": beginMonth,"end": event['end'],
     	               "location": event['location'], "desc": event['desc'], "leader": leader, "cancel": event['cancel'], "img": event['img'],"qrCode": event['qr_code'],
-    	               "created": created,"link":event['link'],"photo":photo });
+    	               "created": created,"link":event['link'],"photo":photo, "subscribed": None });
 
 	return result
 
@@ -106,7 +120,7 @@ def getAllEvents():
 	
     	    result.append({"id": event.id, "name": event.name, "begin": beginDay,"beginMonth": beginMonth,"end": event.end,
     	                   "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel, "img": event.img,"qrCode": event.qr_code,
-    	                   "created": created,"link":event.link,"photo":photo })
+    	                   "created": created,"link":event.link,"photo":photo, "subscribed": None  })
 
     return result
 

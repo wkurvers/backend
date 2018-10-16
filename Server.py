@@ -48,10 +48,11 @@ def createEventTrigger():
         
     payload = {"app_id": appId,
                "included_segments": ["All"],
-               "contents": {"en": "Nieuw evenement van Bslim!"}
-               "headings": {"en": data['title']['rendered']}
+               "contents": {"en": "Nieuw evenement van Bslim!"},
+               "headings": {"en": data['title']['rendered']}}
      
     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+
     return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
                                                          data["start"],
                                                          data["end"],
@@ -248,6 +249,15 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
+@app.route('/api/unSubToEvent', methods=['POST'])
+def unSubToEvent():
+    data = request.get_json()
+    return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
+
+@app.route('/api/checkSub', methods=['POST'])
+def checkSub():
+    data = request.get_json()
+    return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
   
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
@@ -271,7 +281,17 @@ def searchEvent():
 def createNewsItem():
     data = request.get_json()
 
-    print(data)
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                "Authorization": "Basic " + apiKey}
+        
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuws van bslim"},
+               "headings": {"en": data.get('title')}}
+     
+    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
                                                          data.get('content'),
                                                          data.get('img'))})
