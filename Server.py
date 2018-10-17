@@ -41,7 +41,17 @@ def createEventTrigger():
     img = " "
     for image in images:
         img = image['src']
-        print(image['src'])
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                  "Authorization": "Basic " + apiKey}
+        
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuw evenement van Bslim!"},
+               "headings": {"en": data['title']['rendered']}}
+     
+    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
 
     return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
                                                          data["start"],
@@ -80,6 +90,66 @@ def logout():
     data = request.get_json()
     return jsonify({"value": LoginForm.logoutUser(data)})
 
+@app.route('/changeEmailRequest', methods=['POST'])
+def changeMail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    if UserApi.getEmail(oldEmail) == None:
+        return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
+    user = UserApi.getUserByEmail(oldEmail)
+    if UserApi.changeEmail(user.id) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(oldEmail)
+        message = "Om je e-mail adres te veranderen is er een veiligheids code gegenereerd: " + user.securityCode + ". Vul deze code in de app in en voer u nieuwe e-mail adres in."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = oldEmail
+        msg['Subject'] = "E-mail veranderen"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', oldEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
+
+@app.route('/changeUserEmail', methods=['POST'])
+def changeUserEmail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    newEmail = data.get('newEmail')
+    secCode = data.get('secCode')
+    if not UserApi.checkSecCode(oldEmail,secCode):
+        return jsonify({'responseCode': 400, 'msg': "Veiligheidscode is ongeldig."})
+    if UserApi.changeUserEmail(oldEmail, newEmail) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(newEmail)
+        message = "Uw e-mail adres is succesvol verandert."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = newEmail
+        msg['Subject'] = "E-mail adres verandert"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', newEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
@@ -93,12 +163,12 @@ def resetPassword():
         # create message object instance
         msg = MIMEMultipart()
 
-        message = "Your password has been reset. Your new password is: " + newPass + ". Please change your password after you've logged in."
+        message = "Je wachtwoord is gereset. Je nieuwe wachtwoord is " + newPass + ". Verander u wachtwoord zo snel mogelijk aub."
 
         # setup the parameters of the message
         msg['From'] = "bslim@grombouts.nl"
         msg['To'] = email
-        msg['Subject'] = "Password reset"
+        msg['Subject'] = "Wachtwoord reset"
 
         # add in the message body
         msg.attach(MIMEText(message, 'plain'))
@@ -123,7 +193,6 @@ def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
 def changePassword():
     data = request.get_json()
     id = data.get('id')
-    print(id)
     oldPassword = data.get('oldPassword')
     newPassword = data.get('newPassword')
     return jsonify({"responseCode": UserApi.changePassword(id, oldPassword, newPassword)})
@@ -180,6 +249,15 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
+@app.route('/api/unSubToEvent', methods=['POST'])
+def unSubToEvent():
+    data = request.get_json()
+    return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
+
+@app.route('/api/checkSub', methods=['POST'])
+def checkSub():
+    data = request.get_json()
+    return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
   
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
@@ -203,7 +281,17 @@ def searchEvent():
 def createNewsItem():
     data = request.get_json()
 
-    print(data)
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                "Authorization": "Basic " + apiKey}
+        
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuws van bslim"},
+               "headings": {"en": data.get('title')}}
+     
+    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
                                                          data.get('content'),
                                                          data.get('img'))})

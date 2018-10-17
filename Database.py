@@ -8,6 +8,8 @@ from sqlalchemy import extract
 from flask_login import UserMixin
 import checks
 import re
+import random, string
+import hashlib
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
@@ -30,6 +32,7 @@ class Person(Base,UserMixin):
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
     wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
+    securityCode = sqla.Column('securityCode', sqla.VARCHAR(5))
 
 
 class Event(Base):
@@ -131,6 +134,20 @@ class Persister():
         db.close()
         return 200
 
+    def remove_object(obj):
+        db = Session()
+        print("hallo");
+        try:
+            print("trying to delete");
+            db.delete(obj)
+            db.commit()
+            print("deleted");
+        except:
+            db.close()
+            return 400
+        db.close()
+        return 200 
+
     # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId,personId):
@@ -169,6 +186,12 @@ class Persister():
                         return True
         db.close()
         return False
+
+    def getParticepant(eventId, personId):
+        db = Session()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
+        db.close()
+        return participant
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
@@ -302,6 +325,7 @@ class Persister():
 
         #query the db on event names containging the search string
         eventsName = db.query(Event).filter(Event.name.contains(searchString)).all()
+        eventsLocation = db.query(Event).filter(Event.location.contains(searchString)).all()
 
         #query the db for persons whose first and/or last name contain the search string
         personsFirstName = db.query(Person).filter(Person.firstname.contains(searchString)).all()
@@ -423,14 +447,33 @@ class Persister():
     
 
                 returnData[event.id] = eventEntry
+
+        for event in eventsLocation:
+            eventEntry = {}
+            if event.id not in returnData:
+                person = db.query(Person).filter(Person.id == event.leader).first()
+                eventEntry['id'] = event.id
+                eventEntry['name'] = event.name
+                eventEntry['begin'] = event.begin
+                eventEntry['end'] = event.end
+                eventEntry['location'] = event.location
+                eventEntry['desc'] = event.desc
+                eventEntry['leader'] = person.id
+                eventEntry['cancel'] = event.cancel
+                eventEntry['img'] = event.img
+                eventEntry['qr_code'] = event.qr_code
+                eventEntry['created'] = event.created
+                eventEntry['link'] = event.link
+    
+                returnData[event.id] = eventEntry
         db.close()
         return returnData
 
     def savePassword(password, email):
         db = Session()
         person = db.query(Person).filter(Person.email == email).first()
-
-        person.password = password
+        hashedNewPassword = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        person.password = hashedNewPassword
 
         db.commit()
         db.close()
@@ -439,19 +482,42 @@ class Persister():
     def changePassword(id, oldPassword, newPassword):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-        # hashedNewPassword = pbkdf2_sha256.hash(newPassword) CHANGE BACK
-        hashedNewPassword = newPassword
         if person.password == oldPassword:
-            if checks.emptyCheck([newPassword]) or len(newPassword) < 5 or person.password == hashedNewPassword:
+            if checks.emptyCheck([newPassword]) or len(newPassword) < 5 or person.password == newPassword:
                 return 400
             else:
-                person.password = hashedNewPassword
+                person.password = newPassword
     
                 db.commit()
                 db.close()
                 return 200
         return 400
 
+    def changeEmail(id):
+        db = Session()
+        user = db.query(Person).filter(Person.id == id).first()
+        secCode = ''.join(random.choice(string.ascii_uppercase) for _ in range(5))
+        user.securityCode = secCode
+        db.commit()
+        db.close()
+        return 200
+
+    def checkSecCode(oldEmail, secCode):
+        db = Session()
+        userSecCode = db.query(Person.securityCode).filter(Person.email == oldEmail).first()[0]
+        db.close()
+        if secCode == userSecCode:
+            return True
+        return False
+
+    def changeUserEmail(oldEmail, newEmail):
+        db = Session()
+        user = db.query(Person).filter(Person.email == oldEmail).first()
+        user.email = newEmail.lower()
+        user.securityCode = None
+        db.commit()
+        db.close()
+        return 200
 
     def checkPoints(id):
         db = Session()
