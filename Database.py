@@ -611,16 +611,15 @@ class Persister():
             fName = db.query(Person.firstname).filter(Person.id == id).first()
             lName = db.query(Person.lastname).filter(Person.id == id).first()
 
-            name = (fName, " " ,lName)
             db.close()
-            return name
-        else:
-            return "Onbekend"
+            return checks.fixName(fName,lName)
+
 
     def getAllEvents():
         db = Session()
         if db.query(Event).count():
-            events = db.query(Event).all()
+            events = db.query(Event).order_by(Event.begin).all()
+
             db.close()
             return events
         else:
@@ -641,7 +640,7 @@ class Persister():
         db = Session()
 
         if db.query(Content).count():
-            news = db.query(Content).all()
+            news = db.query(Content).order_by(Content.created).all()
             db.close()
             return news
         else:
