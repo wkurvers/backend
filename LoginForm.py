@@ -18,7 +18,7 @@ def loginUser(form):
     if dbPassword == passwordLogin:
         user = UserApi.getUserByEmail(emailLogin)
         Persister.loginUser(user)
-        return {"boolean": "true", "userId": user.id, "clearance": user.clearance, "msg": "OK"}
+        return {"boolean": "true", "userId": user.id, "wordpresskey": user.wordpressKey, "clearance": user.clearance, "msg": "OK"}
 
     else:
         return {"boolean": "false", "userId": None, "clearance": None, "msg": "Wachtwoord klopt niet"}

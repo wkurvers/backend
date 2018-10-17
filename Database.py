@@ -31,7 +31,7 @@ class Person(Base,UserMixin):
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
-    wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
+    wordpressKey = sqla.Column('wordpressKey', sqla.Integer, unique=True)
     securityCode = sqla.Column('securityCode', sqla.VARCHAR(5))
 
 
@@ -43,7 +43,7 @@ class Event(Base):
     end = sqla.Column('end',sqla.DATETIME)
     location = sqla.Column('location',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(200))
-    leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
+    leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.wordpressKey'))
     cancel = sqla.Column('cancel',sqla.Integer)
     img = sqla.Column('img',sqla.VARCHAR(400))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
@@ -607,9 +607,9 @@ class Persister():
     def getLeader(id):
         db = Session()
 
-        if db.query(Person).filter(Person.id == id).count():
-            fName = db.query(Person.firstname).filter(Person.id == id).first()
-            lName = db.query(Person.lastname).filter(Person.id == id).first()
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            fName = db.query(Person.firstname).filter(Person.wordpressKey == id).first()
+            lName = db.query(Person.lastname).filter(Person.wordpressKey == id).first()
 
             db.close()
             return checks.fixName(fName,lName)
