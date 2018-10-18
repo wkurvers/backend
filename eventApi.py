@@ -30,6 +30,7 @@ def findEvent(qrCode):
 	return Persister.findEvent(qrCode)
 
 def createEvent(name,begin,end,location,description,leader,img):
+	print("HOI") 
 	size=6
 	chars=string.ascii_uppercase + string.digits
 	unHashed = ''.join(random.choice(chars) for _ in range(size))
@@ -41,6 +42,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   description == '' or
 	   leader== '' or
 	   img==''):
+		print(400)
 		return 400
 	event = Event(
 			name=name,
@@ -55,6 +57,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 			created= datetime.datetime.now(),
 			link= None
 		)
+	print(event)
 	return Persister.persist_object(event)
 
 def subToEvent(eventId, personId):
