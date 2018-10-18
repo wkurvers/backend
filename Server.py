@@ -51,15 +51,15 @@ def createEventTrigger():
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
-     
+    print("YAY") 
     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-
+    print(data["author"])
     return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
                                                          data["start"],
                                                          data["end"],
                                                          'Peizerweg 48',
                                                          data["content"]["rendered"],
-                                                         '1',
+                                                         data["author"],
                                                          img)})
 
 ################################################################
@@ -268,6 +268,7 @@ def saveMedia():
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
+    print(data)
     result = eventApi.searchEvent(data.get("searchString"))
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
