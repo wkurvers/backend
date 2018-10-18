@@ -11,21 +11,23 @@ def loginUser(form):
     dbEmail = UserApi.getEmail(emailLogin)
 
     if dbEmail is None:
-        return {"boolean": "false", "userId": None, "clearance": None, "msg": "Email klopt niet"}
+        return {"responseCode": 400, "boolean": "false", "userId": None, "clearance": None, "msg": "Email klopt niet"}
 
     dbPassword = UserApi.getPassword(emailLogin)
 
     if dbPassword == passwordLogin:
         user = UserApi.getUserByEmail(emailLogin)
         Persister.loginUser(user)
-        return {"boolean": "true", "userId": user.id, "clearance": user.clearance, "msg": "OK"}
+        return {"responseCode": 200, "boolean": "true", "userId": user.id, "clearance": user.clearance, "msg": "OK"}
 
     else:
-        return {"boolean": "false", "userId": None, "clearance": None, "msg": "Wachtwoord klopt niet"}
+        return {"responseCode": 400, "boolean": "false", "userId": None, "clearance": None, "msg": "Wachtwoord klopt niet"}
 
 def logoutUser(form):
     user = Persister.getPerson(form.get('id'))
-    return Persister.logoutUser(user)
+    if Persister.logoutUser(user):
+        return {"responseCode": 200, "boolean": True}
+    return {"responseCode": 500, "boolean": False}
 
 
 def checkLogin(form):

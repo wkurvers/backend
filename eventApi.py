@@ -75,9 +75,7 @@ def findSub(eventId, personId):
 
 def unSubToEvent(eventId, personId):
 	if Persister.checkParticepant(eventId, personId):
-		print("particepant exists")
 		particepant = Persister.getParticepant(eventId, personId)
-		print(particepant)
 		if Persister.remove_object(particepant) == 200:
 			return ({"responseCode": 200, "msg": "Removed particepant entry."})
 		else:
