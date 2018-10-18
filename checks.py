@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 def checkSpecialChars(items):
     for item in items:
-        if set('[~!#$%^&*()_+{}":;\']+$').intersection(item):
+        if set('[~!#$%^&*-+":;\']+$').intersection(item):
             return True
     return False
 
@@ -36,4 +36,16 @@ def lengthSixtyFourCheck(items):
         if len(item) > 64:
             return True
     return False
+
+def fixName(fName,lName):
+    if '_' in str(fName):
+        voornaam = " ".join([x for x in fName]).replace('_',' ')
+        achternaam = "".join([x for x in lName])
+        name = voornaam + " "  + achternaam
+        return name
+    elif '_' not in str(fName):
+        voornaam = "".join([x for x in fName])
+        achternaam = "".join([x for x in lName])
+        name = voornaam + " "  + achternaam
+        return name
 

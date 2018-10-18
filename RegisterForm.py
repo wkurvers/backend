@@ -11,10 +11,11 @@ def registerSubmit(form, clearance):
     lastName = form.get('lastName', None)
     email = form.get('email', None)
     password = form.get('password', None)
+    wordpresskey = form.get('wordpresskey', None)
 
     firstName = firstName.strip()
     lastName = lastName.strip()
-    firstName = firstName.replace(" ", "")
+    firstName = firstName.replace(" ", "_")
     lastName = lastName.replace(" ", "")
     email = email.replace(" ", "")
     firstName = firstName.lower()
@@ -73,9 +74,11 @@ def registerSubmit(form, clearance):
             password=password,
             points=0,
             clearance=1,
+            wordpressKey=wordpresskey,
             license=True,
             authenticated=False,
-            biography=form.get('biography')
+            biography=form.get('biography'),
+            profilePhoto=form.get('img')
         )
         return Persister.persist_object(person)
     else:
