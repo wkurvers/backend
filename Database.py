@@ -1,3 +1,7 @@
+import base64
+from io import BytesIO
+
+import qrcode
 import sqlalchemy as sqla
 from flask import jsonify
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
@@ -326,7 +330,7 @@ class Persister():
                 else:
                     eventsByBegin = db.query(Event).filter(extract('month', Event.Begin) == monthNumber).all()
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
-            
+
         for event in eventsByBegin:
 
             if event.id not in returnData:
@@ -398,7 +402,7 @@ class Persister():
                         eventEntry['qr_code'] = event.qr_code
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
-    
+
 
                         returnData[event.id] = eventEntry
 
@@ -420,7 +424,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
+
 
                 returnData[event.id] = eventEntry
         db.close()
@@ -446,7 +450,7 @@ class Persister():
                 return 400
             else:
                 person.password = hashedNewPassword
-    
+
                 db.commit()
                 db.close()
                 return 200
@@ -579,5 +583,48 @@ class Persister():
             return news
         else:
             return {}
+
+    def getQrString(id):
+        db = Session()
+
+        if db.query(Event.id).filter(Event.id == id).count():
+            qrString = db.query(Event.qr_code).filter(Event.id == id)
+            db.close()
+            return qrString
+        else:
+            return 400
+
+    def createQrImage(id):
+        # Create qr code instance
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=10,
+            border=4,
+        )
+
+
+        # The data that you want to store
+        data = Persister.getQrString(id)
+
+        # Add data
+        qr.add_data(data)
+        qr.make(fit=True)
+
+        # Create an image from the QR Code instance
+        img = qr.make_image()
+
+        # Save it somewhere, change the extension as needed:
+        # img.save("image.png")
+        # img.save("image.bmp")
+        # img.save("image.jpeg")
+        # img.save("image.jpg")
+
+        buffered = BytesIO()
+        img.save(buffered, format="JPEG")
+        img_str = base64.b64encode(buffered.getvalue())
+        my_json = img_str.decode('utf8').replace("'", '"')
+
+        return my_json
 
 Base.metadata.create_all(conn)
