@@ -193,6 +193,15 @@ class Persister():
         db.close()
         return participant
 
+    def getAllParticepants(eventId):
+        db = Session()
+        if db.query(Particepant).filter(Particepant.event_id == eventId).count():
+            participants = db.query(Particepant).filter(Particepant.event_id == eventId).all()
+            db.close()
+            return participants
+        else:
+            return {}
+
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
         db = Session()

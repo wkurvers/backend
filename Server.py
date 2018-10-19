@@ -33,10 +33,9 @@ def route(path):
     return render_template('index.html')
 
 
-
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
-    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('img')
     img = " "
@@ -45,13 +44,13 @@ def createEventTrigger():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                  "Authorization": "Basic " + apiKey}
-        
+              "Authorization": "Basic " + apiKey}
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
-    print("YAY") 
+
     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     print(data["author"])
     return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
@@ -61,6 +60,7 @@ def createEventTrigger():
                                                          data["content"]["rendered"],
                                                          data["author"],
                                                          img)})
+
 
 ################################################################
 # login/logout
@@ -90,6 +90,7 @@ def loginCheck():
 def logout():
     data = request.get_json()
     return jsonify({"value": LoginForm.logoutUser(data)})
+
 
 @app.route('/changeEmailRequest', methods=['POST'])
 def changeMail():
@@ -121,13 +122,14 @@ def changeMail():
         return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
 
+
 @app.route('/changeUserEmail', methods=['POST'])
 def changeUserEmail():
     data = request.get_json()
     oldEmail = data.get('oldEmail')
     newEmail = data.get('newEmail')
     secCode = data.get('secCode')
-    if not UserApi.checkSecCode(oldEmail,secCode):
+    if not UserApi.checkSecCode(oldEmail, secCode):
         return jsonify({'responseCode': 400, 'msg': "Veiligheidscode is ongeldig."})
     if UserApi.changeUserEmail(oldEmail, newEmail) == 200:
         msg = MIMEMultipart()
@@ -151,6 +153,7 @@ def changeUserEmail():
         server.quit()
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
+
 
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
@@ -250,20 +253,24 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
+
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
     data = request.get_json()
     return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
 
+
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
     return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
-  
+
+
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
+
 
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
@@ -272,7 +279,7 @@ def searchEvent():
     result = eventApi.searchEvent(data.get("searchString"))
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
+    return jsonify({"responseCode": 400, "events": {}})
 
 
 ################################################################
@@ -286,17 +293,17 @@ def createNewsItem():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                "Authorization": "Basic " + apiKey}
-        
+              "Authorization": "Basic " + apiKey}
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
-     
+
     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
-                                                         data.get('content'),
-                                                         data.get('img'))})
+                                                           data.get('content'),
+                                                           data.get('img'))})
 
 
 @app.route('/api/searchNews', methods=['POST'])
@@ -305,7 +312,8 @@ def searchNews():
     result = eventApi.searchNews(data.get("searchString"))
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
-    return jsonify({"responseCode": 400, "news": {} })
+    return jsonify({"responseCode": 400, "news": {}})
+
 
 ################################################################
 # mentor
@@ -362,12 +370,13 @@ def registerNormalUser():
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
+
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
+    return jsonify({"responseCode": 400, "events": {}})
 
 
 @app.route('/api/getAllAdmins', methods=['POST'])
@@ -381,10 +390,11 @@ def getAdmins():
 
 @app.route('/api/getAllNewsItems', methods=['GET'])
 def getNews():
-    result =  eventApi.getAllNewsItems()
+    result = eventApi.getAllNewsItems()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
-    return jsonify({"responseCode": 400, "news": {} })
+    return jsonify({"responseCode": 400, "news": {}})
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
