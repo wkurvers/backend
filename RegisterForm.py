@@ -74,7 +74,7 @@ def registerSubmit(form, clearance):
             password=password,
             points=0,
             clearance=1,
-            wordpresskey=wordpresskey,
+            wordpressKey=wordpresskey,
             license=True,
             authenticated=False,
             biography=form.get('biography'),
