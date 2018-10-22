@@ -594,37 +594,6 @@ class Persister():
         else:
             return 400
 
-    def createQrImage(id):
-        # Create qr code instance
-        qr = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=4,
-        )
-
-
-        # The data that you want to store
-        data = Persister.getQrString(id)
-
-        # Add data
-        qr.add_data(data)
-        qr.make(fit=True)
-
-        # Create an image from the QR Code instance
-        img = qr.make_image()
-
-        # Save it somewhere, change the extension as needed:
-        # img.save("image.png")
-        # img.save("image.bmp")
-        # img.save("image.jpeg")
-        # img.save("image.jpg")
-
-        buffered = BytesIO()
-        img.save(buffered, format="JPEG")
-        img_str = base64.b64encode(buffered.getvalue())
-        my_json = img_str.decode('utf8').replace("'", '"')
-
-        return my_json
+    
 
 Base.metadata.create_all(conn)

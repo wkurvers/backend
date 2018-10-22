@@ -113,12 +113,12 @@ def getAllEvents():
             begin = event.begin
             beginDay = begin.strftime('%d')
             beginMonth = begin.strftime('%b')
-            qrCode = Persister.createQrImage(event.id)
+
 
             result.append(
                 {"id": event.id, "name": event.name, "begin": beginDay, "beginMonth": beginMonth, "end": event.end,
                  "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
-                 "img": event.img, "qrCode": qrCode,
+                 "img": event.img, "qrCode": event.qr_code,
                  "created": created, "link": event.link, "photo": photo})
 
     return result
