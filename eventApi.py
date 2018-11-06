@@ -1,9 +1,21 @@
-import datetime
-import random
-import string
-from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from Database import Persister, Particepant, Event
+import string, random
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
+from flask import jsonify
+import datetime
 
+months = {'Jan': 'Jan',
+          'Feb': 'Feb',
+          'Mar': 'Mrt',
+          'Apr': 'Apr',
+          'May': 'Mei',
+          'Jun': 'Jun',
+          'Jul': 'Jul',
+          'Aug': 'Aug',
+          'Sep': 'Sep',
+          'Oct': 'Okt',
+          'Nov': 'Nov',
+          'Dec': 'Dec'};
 
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
@@ -14,40 +26,37 @@ def eventScanned(event_id, person_id):
 def isScanned(eventId, person_id):
     return Persister.isScanned(eventId, person_id)
 
-
-# returns
+# returns 
 def findEvent(qrCode):
     return Persister.findEvent(qrCode)
 
-
-def createEvent(name, begin, end, location, description, leader, img):
-    size = 6
-    chars = string.ascii_uppercase + string.digits
-    unHashed = ''.join(random.choice(chars) for _ in range(size))
-    qr_code = pbkdf2_sha256.hash(unHashed)
-    if (name == '' or
-            begin == '' or
-            end == '' or
-            location == '' or
-            description == '' or
-            leader == '' or
-            img == ''):
-        return 400
-    event = Event(
-        name=name,
-        begin=begin,
-        end=end,
-        location=location,
-        desc=description,
-        leader=leader,
-        cancel=0,
-        img=img,
-        qr_code=qr_code,
-        created=datetime.datetime.now(),
-        link=None
-    )
-    return Persister.persist_object(event)
-
+def createEvent(name,begin,end,location,description,leader,img):
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		return 400
+	event = Event(
+			name=name,
+			begin=begin,
+			end=end,
+			location=location,
+			desc=description,
+			leader=leader,
+			cancel=0,
+			img=img,
+			qr_code=qr_code,
+			created= datetime.datetime.now(),
+			link= None
+		)
+	return Persister.persist_object(event)
 
 def subToEvent(eventId, personId):
     if not Persister.checkParticepant(eventId, personId):
@@ -59,14 +68,30 @@ def subToEvent(eventId, personId):
         if Persister.persist_object(particepant) == 200:
             return ({"responseCode": 200, "msg": "Added particepant entry."})
         else:
-            return ({"responseCode": 400, "msg": "Could not add entry due to db error."})
+            return ({"responseCode": 500, "msg": "Could not add entry due to db error."})
     return ({"responseCode": 400,
              "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
 
 
+def findSub(eventId, personId):
+    return ({"found": Persister.checkParticepant(eventId, personId)})
+
+
+def unSubToEvent(eventId, personId):
+    if Persister.checkParticepant(eventId, personId):
+        print("particepant exists")
+        particepant = Persister.getParticepant(eventId, personId)
+        print(particepant)
+        if Persister.remove_object(particepant) == 200:
+            return ({"responseCode": 200, "msg": "Removed particepant entry."})
+        else:
+            return ({"responseCode": 500, "msg": "Could not remove entry due to db error."})
+    return ({"responseCode": 400,
+             "msg": "Could not remove participant entry because either some of the given data did not match or the entry does not exists."})
+
+
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
-
 
 def searchEvent(searchString):
     found = Persister.searchEvent(searchString)
@@ -80,12 +105,17 @@ def searchEvent(searchString):
         begin = event['begin']
         beginDay = begin.strftime('%d')
         beginMonth = begin.strftime('%b')
+        beginTime = begin.strftime('%H:%M')
 
-        result.append(
-            {"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": beginMonth, "end": event['end'],
-             "location": event['location'], "desc": event['desc'], "leader": leader, "cancel": event['cancel'],
-             "img": event['img'], "qrCode": event['qr_code'],
-             "created": created, "link": event['link'], "photo": photo});
+        end = event['end']
+        endDay = end.strftime('%d')
+        endMonth = end.strftime('%b')
+        endTime = end.strftime('%H:%M')
+        result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth],
+                       "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
+                       "location": event['location'], "desc": event['desc'], "leader": leader,
+                       "cancel": event['cancel'], "img": event['img'], "qrCode": event['qr_code'],
+                       "created": created, "link": event['link'], "photo": photo, "subscribed": None});
 
     return result
 
@@ -110,16 +140,30 @@ def getAllEvents():
             photo = Persister.getProfilePhoto(event.leader)
             createDate = event.created
             created = createDate.strftime('%m/%d/%Y')
+
             begin = event.begin
             beginDay = begin.strftime('%d')
             beginMonth = begin.strftime('%b')
+            beginTime = begin.strftime('%H:%M')
 
+            end = event.end
+            endDay = end.strftime('%d')
+            endMonth = end.strftime('%b')
+            endTime = end.strftime('%H:%M')
 
-            result.append(
-                {"id": event.id, "name": event.name, "begin": beginDay, "beginMonth": beginMonth, "end": event.end,
-                 "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
-                 "img": event.img, "qrCode": event.qr_code,
-                 "created": created, "link": event.link, "photo": photo})
+            participantList = []
+            participants = Persister.getAllParticepants(event.id)
+            if participants != 400:
+                for participant in participants:
+                    person = Persister.getPerson(participant.person_id)
+                    name = person.firstname + " " + person.lastname
+                    participantList.append(name)
+            print(participantList)
+            result.append({"id": event.id, "name": event.name, "begin": beginDay, "beginMonth": months[beginMonth],
+                           "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
+                           "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
+                           "img": event.img, "qrCode": event.qr_code,
+                           "created": created, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList})
 
     return result
 
