@@ -31,7 +31,7 @@ class Person(Base,UserMixin):
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
-    wordpressKey = sqla.Column('wordpressKey', sqla.VARCHAR(400))
+    wordpressKey = sqla.Column('wordpressKey', sqla.Integer, unique=True)
     securityCode = sqla.Column('securityCode', sqla.VARCHAR(5))
 
 
@@ -43,7 +43,7 @@ class Event(Base):
     end = sqla.Column('end',sqla.DATETIME)
     location = sqla.Column('location',sqla.VARCHAR(64))
     desc = sqla.Column('desc',sqla.VARCHAR(200))
-    leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.id'))
+    leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.wordpressKey'))
     cancel = sqla.Column('cancel',sqla.Integer)
     img = sqla.Column('img',sqla.VARCHAR(400))
     qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
@@ -93,10 +93,14 @@ class Persister():
 
     def loginUser(user):
         db = Session()
-        person = db.query(Person).filter(Person.id == user.id).first()
-        person.authenticated = True
-        db.commit()
-        db.close()
+        try:
+            person = db.query(Person).filter(Person.id == user.id).first()
+            person.authenticated = True
+            db.commit()
+            db.close()
+        except:
+            db.close()
+            return False
         return True
 
     def logoutUser(user):
@@ -317,7 +321,7 @@ class Persister():
         eventsByLeader = {}
         eventsByBegin = {}
         eventsByEnd = {}
-
+        print(searchString)
         #query the db on event names containging the search string
         eventsName = db.query(Event).filter(Event.name.contains(searchString)).all()
         eventsLocation = db.query(Event).filter(Event.location.contains(searchString)).all()
@@ -343,21 +347,21 @@ class Persister():
                     eventsByBegin = db.query(Event).filter(Event.begin.contains(dateString)).all()
                     eventsByEnd = db.query(Event).filter(Event.end.contains(dateString)).all()
                 else:
-                    eventsByBegin = db.query(Event).filter(extract('month', Event.Begin) == monthNumber).all()
+                    eventsByBegin = db.query(Event).filter(extract('month', Event.begin) == monthNumber).all()
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
             
         for event in eventsByBegin:
 
             if event.id not in returnData:
                 eventEntry = {}
-                person = db.query(Person).filter(Person.id == event.leader).first()
+                person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.id
+                eventEntry['leader'] = person.wordpressKey
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
@@ -370,14 +374,14 @@ class Persister():
         for event in eventsByEnd:
             if event.id not in returnData:
                 eventEntry = {}
-                person = db.query(Person).filter(Person.id == event.leader).first()
+                person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.id
+                eventEntry['leader'] = person.wordpressKey
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
@@ -399,8 +403,8 @@ class Persister():
         #loop through leaders dict and if it exists get all events that that person leads, if it isn't already in the returnData dict it adds the event
         for personId in leaders:
             person = leaders[personId]
-            if db.query(Event).filter(Event.leader == person.id).count():
-                events = db.query(Event).filter(Event.leader == person.id).all()
+            if db.query(Event).filter(Event.leader == person.wordpressKey).count():
+                events = db.query(Event).filter(Event.leader == person.wordpressKey).all()
                 for event in events:
 
                     if event.id not in returnData:
@@ -411,7 +415,7 @@ class Persister():
                         eventEntry['end'] = event.end
                         eventEntry['location'] = event.location
                         eventEntry['desc'] = event.desc
-                        eventEntry['leader'] = person.id
+                        eventEntry['leader'] = person.wordpressKey
                         eventEntry['cancel'] = event.cancel
                         eventEntry['img'] = event.img
                         eventEntry['qr_code'] = event.qr_code
@@ -426,14 +430,14 @@ class Persister():
             eventEntry = {}
 
             if event.id not in returnData:
-                person = db.query(Person).filter(Person.id == event.leader).first()
+                person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.id
+                eventEntry['leader'] = person.wordpressKey
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
@@ -446,14 +450,14 @@ class Persister():
         for event in eventsLocation:
             eventEntry = {}
             if event.id not in returnData:
-                person = db.query(Person).filter(Person.id == event.leader).first()
+                person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
                 eventEntry['id'] = event.id
                 eventEntry['name'] = event.name
                 eventEntry['begin'] = event.begin
                 eventEntry['end'] = event.end
                 eventEntry['location'] = event.location
                 eventEntry['desc'] = event.desc
-                eventEntry['leader'] = person.id
+                eventEntry['leader'] = person.wordpressKey
                 eventEntry['cancel'] = event.cancel
                 eventEntry['img'] = event.img
                 eventEntry['qr_code'] = event.qr_code
@@ -590,9 +594,9 @@ class Persister():
     def getProfilePhoto(id):
         db = Session()
 
-        if db.query(Person).filter(Person.id == id).count():
+        if db.query(Person).filter(Person.wordpressKey == id).count():
 
-            profilePhoto = db.query(Person.profilePhoto).filter(Person.id == id).first()
+            profilePhoto = db.query(Person.profilePhoto).filter(Person.wordpressKey == id).first()
             db.close()
 
             return profilePhoto
@@ -602,20 +606,19 @@ class Persister():
     def getLeader(id):
         db = Session()
 
-        if db.query(Person).filter(Person.id == id).count():
-            fName = db.query(Person.firstname).filter(Person.id == id).first()
-            lName = db.query(Person.lastname).filter(Person.id == id).first()
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            fName = db.query(Person.firstname).filter(Person.wordpressKey == id).first()
+            lName = db.query(Person.lastname).filter(Person.wordpressKey == id).first()
 
-            name = (fName, " " ,lName)
             db.close()
-            return name
-        else:
-            return "Onbekend"
+            return checks.fixName(fName,lName)
+
 
     def getAllEvents():
         db = Session()
         if db.query(Event).count():
-            events = db.query(Event).all()
+            events = db.query(Event).order_by(Event.begin).all()
+
             db.close()
             return events
         else:
@@ -636,7 +639,7 @@ class Persister():
         db = Session()
 
         if db.query(Content).count():
-            news = db.query(Content).all()
+            news = db.query(Content).order_by(Content.created).all()
             db.close()
             return news
         else:

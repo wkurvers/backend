@@ -15,7 +15,7 @@ def registerSubmit(form, clearance):
 
     firstName = firstName.strip()
     lastName = lastName.strip()
-    firstName = firstName.replace(" ", "")
+    firstName = firstName.replace(" ", "_")
     lastName = lastName.replace(" ", "")
     email = email.replace(" ", "")
     firstName = firstName.lower()
@@ -81,5 +81,16 @@ def registerSubmit(form, clearance):
             profilePhoto=form.get('img')
         )
         return Persister.persist_object(person)
-    else:
-        return
+
+def registerFacebookUser(form):
+    person = Person(
+        firstname=form.get('firstName'),
+        lastname=form.get('lastName'),
+        email=form.get('email'),
+        password='',
+        points=0,
+        clearance=0,
+        license=True,
+        authenticated=False
+    )
+    return Persister.persist_object(person)

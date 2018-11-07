@@ -1,4 +1,4 @@
-from Database import Persister
+from Database import Persister, Content, Person
 import datetime
 
 def getPerson(person_id):
@@ -73,3 +73,4 @@ def createNewsItem(title, content, img):
         created=datetime.datetime.now()
     )
     return Persister.persist_object(item)
+

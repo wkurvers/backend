@@ -41,6 +41,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 	   description == '' or
 	   leader== '' or
 	   img==''):
+		print(400)
 		return 400
 	event = Event(
 			name=name,
@@ -55,6 +56,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 			created= datetime.datetime.now(),
 			link= None
 		)
+	print(event)
 	return Persister.persist_object(event)
 
 def subToEvent(eventId, personId):
