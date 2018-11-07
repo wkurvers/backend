@@ -657,27 +657,31 @@ class Persister():
             return {}
 
     def getAllSubs(id):
-        eventIds = Persister.getAllSubs(id)
-        print(eventIds)
-
-        result = []
-        if eventIds != 400:
-            for item in eventIds:
-                print(item[0])
-                eventName = Persister.getEventName(item[0])
-                result.append(
-                    {"title": eventName})
-
-        return result
-
-
-    def getEventName(eventId):
         db = Session()
 
-        eventNames = db.query(Event.name).filter(Event.id == eventId).all()
-        print(eventNames)
+        if db.query(Particepant).filter(Particepant.person_id == id).count():
+            eventIds = db.query(Particepant.event_id).filter(Particepant.person_id == id).filter(Particepant.event_scanned == 1).all()
+            db.close()
+            list = []
+            for id in eventIds:
+                list.append(id[0])
+            print("nieuwe ids zijn", list)
+            return list
+        else:
+            db.close()
+            return {}
+
+
+    def getAllSubbedEvents(eventId):
+        db = Session()
+
+        results = []
+        for id in eventId:
+         event = db.query(Event).filter(Event.id == id).all()
+         results.append(event)
         db.close()
-        return eventNames
+        print("dit zijn de evenementen", results)
+        return results
 
 
 Base.metadata.create_all(conn)

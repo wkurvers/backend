@@ -182,14 +182,39 @@ def getAllNewsItems():
 
 def getAllSubs(id):
     eventIds = Persister.getAllSubs(id)
-    print(eventIds)
+    events = Persister.getAllSubbedEvents(eventIds)
 
     result = []
-    if eventIds != 400:
-        for item in eventIds:
-            print(item[0])
-            eventName = Persister.getEventName(item[0])
-            result.append(
-                {"title": eventName})
+    if events != 400:
+        for event in events:
+            for e in event:
+                leader = Persister.getLeader(e.leader)
+                photo = Persister.getProfilePhoto(e.leader)
+                createDate = e.created
+                created = createDate.strftime('%m/%d/%Y')
+
+                begin = e.begin
+                beginDay = begin.strftime('%d')
+                beginMonth = begin.strftime('%b')
+                beginTime = begin.strftime('%H:%M')
+
+                end = e.end
+                endDay = end.strftime('%d')
+                endMonth = end.strftime('%b')
+                endTime = end.strftime('%H:%M')
+
+                participantList = []
+                participants = Persister.getAllParticepants(e.id)
+                if participants != 400:
+                    for participant in participants:
+                        person = Persister.getPerson(participant.person_id)
+                        name = person.firstname + " " + person.lastname
+                        participantList.append(name)
+
+                    result.append({"id": e.id, "name": e.name, "begin": beginDay, "beginMonth": months[beginMonth],
+                                   "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
+                                   "location": e.location, "desc": e.desc, "leader": leader, "cancel": e.cancel,
+                                   "img": e.img, "qrCode": e.qr_code,
+                                   "created": created, "link": e.link, "photo": photo, "subscribed": None, "participants": participantList})
 
     return result
