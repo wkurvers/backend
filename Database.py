@@ -653,6 +653,31 @@ class Persister():
             db.close()
             return news
         else:
+            db.close()
             return {}
+
+    def getAllSubs(id):
+        eventIds = Persister.getAllSubs(id)
+        print(eventIds)
+
+        result = []
+        if eventIds != 400:
+            for item in eventIds:
+                print(item[0])
+                eventName = Persister.getEventName(item[0])
+                result.append(
+                    {"title": eventName})
+
+        return result
+
+
+    def getEventName(eventId):
+        db = Session()
+
+        eventNames = db.query(Event.name).filter(Event.id == eventId).all()
+        print(eventNames)
+        db.close()
+        return eventNames
+
 
 Base.metadata.create_all(conn)

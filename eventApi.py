@@ -179,3 +179,17 @@ def getAllNewsItems():
                  "link": item.link})
 
     return result
+
+def getAllSubs(id):
+    eventIds = Persister.getAllSubs(id)
+    print(eventIds)
+
+    result = []
+    if eventIds != 400:
+        for item in eventIds:
+            print(item[0])
+            eventName = Persister.getEventName(item[0])
+            result.append(
+                {"title": eventName})
+
+    return result
