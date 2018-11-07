@@ -17,7 +17,6 @@ months = {'Jan': 'Jan',
           'Nov': 'Nov',
           'Dec': 'Dec'};
 
-
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
     return Persister.updateParticepantInfo(event_id, person_id)
@@ -27,40 +26,37 @@ def eventScanned(event_id, person_id):
 def isScanned(eventId, person_id):
     return Persister.isScanned(eventId, person_id)
 
-
-# returns
+# returns 
 def findEvent(qrCode):
     return Persister.findEvent(qrCode)
 
-
-def createEvent(name, begin, end, location, description, leader, img):
-    size = 6
-    chars = string.ascii_uppercase + string.digits
-    unHashed = ''.join(random.choice(chars) for _ in range(size))
-    qr_code = pbkdf2_sha256.hash(unHashed)
-    if (name == '' or
-            begin == '' or
-            end == '' or
-            location == '' or
-            description == '' or
-            leader == '' or
-            img == ''):
-        return 400
-    event = Event(
-        name=name,
-        begin=begin,
-        end=end,
-        location=location,
-        desc=description,
-        leader=leader,
-        cancel=0,
-        img=img,
-        qr_code=qr_code,
-        created=datetime.datetime.now(),
-        link=None
-    )
-    return Persister.persist_object(event)
-
+def createEvent(name,begin,end,location,description,leader,img):
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		return 400
+	event = Event(
+			name=name,
+			begin=begin,
+			end=end,
+			location=location,
+			desc=description,
+			leader=leader,
+			cancel=0,
+			img=img,
+			qr_code=qr_code,
+			created= datetime.datetime.now(),
+			link= None
+		)
+	return Persister.persist_object(event)
 
 def subToEvent(eventId, personId):
     if not Persister.checkParticepant(eventId, personId):
@@ -96,7 +92,6 @@ def unSubToEvent(eventId, personId):
 
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
-
 
 def searchEvent(searchString):
     found = Persister.searchEvent(searchString)
@@ -182,5 +177,19 @@ def getAllNewsItems():
             result.append(
                 {"id": item.id, "url": item.url, "title": item.title, "desc": item.desc, "created": item.created,
                  "link": item.link})
+
+    return result
+
+def getAllSubs(id):
+    eventIds = Persister.getAllSubs(id)
+    print(eventIds)
+
+    result = []
+    if eventIds != 400:
+        for item in eventIds:
+            print(item[0])
+            eventName = Persister.getEventName(item[0])
+            result.append(
+                {"title": eventName})
 
     return result

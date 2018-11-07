@@ -395,6 +395,15 @@ def getNews():
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {}})
 
+@app.route('/api/getAllSubs', methods=['POST'])
+def getAllSubs():
+    data = request.get_json()
+    id = data.get("id")
+    print(id)
+    result = eventApi.getAllSubs(id)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "subs": result})
+    return jsonify({"responseCode": 400, "subs": {}})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
