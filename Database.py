@@ -146,7 +146,7 @@ class Persister():
             db.close()
             return 400
         db.close()
-        return 200 
+        return 200
 
     # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
@@ -192,6 +192,15 @@ class Persister():
         participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
         db.close()
         return participant
+
+    def getAllParticepants(eventId):
+        db = Session()
+        if db.query(Particepant).filter(Particepant.event_id == eventId).count():
+            participants = db.query(Particepant).filter(Particepant.event_id == eventId).all()
+            db.close()
+            return participants
+        else:
+            return {}
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
@@ -349,7 +358,7 @@ class Persister():
                 else:
                     eventsByBegin = db.query(Event).filter(extract('month', Event.begin) == monthNumber).all()
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
-            
+
         for event in eventsByBegin:
 
             if event.id not in returnData:
@@ -421,7 +430,7 @@ class Persister():
                         eventEntry['qr_code'] = event.qr_code
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
-    
+
 
                         returnData[event.id] = eventEntry
 
@@ -443,7 +452,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
+
 
                 returnData[event.id] = eventEntry
 
@@ -463,7 +472,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
+
                 returnData[event.id] = eventEntry
         db.close()
         return returnData
@@ -643,6 +652,31 @@ class Persister():
             db.close()
             return news
         else:
+            db.close()
             return {}
+
+    def getAllSubs(id):
+        eventIds = Persister.getAllSubs(id)
+        print(eventIds)
+
+        result = []
+        if eventIds != 400:
+            for item in eventIds:
+                print(item[0])
+                eventName = Persister.getEventName(item[0])
+                result.append(
+                    {"title": eventName})
+
+        return result
+
+
+    def getEventName(eventId):
+        db = Session()
+
+        eventNames = db.query(Event.name).filter(Event.id == eventId).all()
+        print(eventNames)
+        db.close()
+        return eventNames
+
 
 Base.metadata.create_all(conn)
