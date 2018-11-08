@@ -89,7 +89,6 @@ def unSubToEvent(eventId, personId):
     return ({"responseCode": 400,
              "msg": "Could not remove participant entry because either some of the given data did not match or the entry does not exists."})
 
-
 def saveMedia(url, eventName):
     return Persister.saveMedia(url, eventName)
 
