@@ -93,10 +93,14 @@ class Persister():
 
     def loginUser(user):
         db = Session()
-        person = db.query(Person).filter(Person.id == user.id).first()
-        person.authenticated = True
-        db.commit()
-        db.close()
+        try:
+            person = db.query(Person).filter(Person.id == user.id).first()
+            person.authenticated = True
+            db.commit()
+            db.close()
+        except:
+            db.close()
+            return False
         return True
 
     def logoutUser(user):
@@ -106,7 +110,6 @@ class Persister():
         db.commit()
         db.close()
         return True
-        return False
 
     def getPassword(email):
         db = Session()
@@ -136,12 +139,9 @@ class Persister():
 
     def remove_object(obj):
         db = Session()
-        print("hallo");
         try:
-            print("trying to delete");
             db.delete(obj)
             db.commit()
-            print("deleted");
         except:
             db.close()
             return 400
@@ -281,7 +281,6 @@ class Persister():
 
         for news in newsByDate:
             if news.id not in returnData:
-                print(news.title)
                 newsEntry = {}
                 newsEntry['id'] = news.id
                 newsEntry['title'] = news.title
@@ -561,7 +560,7 @@ class Persister():
         person = db.query(Person).filter(Person.id == id).first()
 
         if person.points >= 15:
-            person.points = 0
+            person.points = person.points - 15
 
             db.commit()
             db.close()
