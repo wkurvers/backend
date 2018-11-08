@@ -110,11 +110,19 @@ def searchEvent(searchString):
         endDay = end.strftime('%d')
         endMonth = end.strftime('%b')
         endTime = end.strftime('%H:%M')
+
+        participantList = []
+            participants = Persister.getAllParticepants(event.id)
+            if participants != 400:
+                for participant in participants:
+                    person = Persister.getPerson(participant.person_id)
+                    name = person.firstname + " " + person.lastname
+                    participantList.append(name)
         result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth],
                        "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                        "location": event['location'], "desc": event['desc'], "leader": leader,
                        "cancel": event['cancel'], "img": event['img'], "qrCode": event['qr_code'],
-                       "created": created, "link": event['link'], "photo": photo, "subscribed": None});
+                       "created": created, "link": event['link'], "photo": photo, "subscribed": None, "participants": participantList, 'key': event['id']});
 
     return result
 
@@ -157,12 +165,11 @@ def getAllEvents():
                     person = Persister.getPerson(participant.person_id)
                     name = person.firstname + " " + person.lastname
                     participantList.append(name)
-            print(participantList)
             result.append({"id": event.id, "name": event.name, "begin": beginDay, "beginMonth": months[beginMonth],
                            "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                            "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
                            "img": event.img, "qrCode": event.qr_code,
-                           "created": created, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList})
+                           "created": created, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList, 'key': event['id']})
 
     return result
 
