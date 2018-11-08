@@ -33,10 +33,7 @@ def route(path):
     return render_template('index.html')
 
 
-<<<<<<< HEAD
 #sends the event to the wordpress website and sends a notification to the app
-=======
->>>>>>> upstream/master
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
     data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
@@ -93,11 +90,7 @@ def logout():
     data = request.get_json()
     return jsonify(LoginForm.logoutUser(data))
 
-<<<<<<< HEAD
 #generates a security code and sends it via email to the user
-=======
-
->>>>>>> upstream/master
 @app.route('/changeEmailRequest', methods=['POST'])
 def changeMail():
     data = request.get_json()
@@ -129,10 +122,7 @@ def changeMail():
     return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
 
 
-<<<<<<< HEAD
 #changes the email of the user if the security code is correct
-=======
->>>>>>> upstream/master
 @app.route('/changeUserEmail', methods=['POST'])
 def changeUserEmail():
     data = request.get_json()
@@ -164,11 +154,8 @@ def changeUserEmail():
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
-<<<<<<< HEAD
-#generates a new password and sends it to the user via email
-=======
 
->>>>>>> upstream/master
+#generates a new password and sends it to the user via email
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
     if (request.method == "POST"):
@@ -267,21 +254,13 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
-<<<<<<< HEAD
 #removes a participent entry from the db with a specific event and user
-=======
-
->>>>>>> upstream/master
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
     data = request.get_json()
     return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
 
-<<<<<<< HEAD
 #checks whether a participent entry with a specific event and person exists
-=======
-
->>>>>>> upstream/master
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
@@ -293,11 +272,8 @@ def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
-<<<<<<< HEAD
-#searches through all the events in the db on title/leader and begin-/end- date
-=======
 
->>>>>>> upstream/master
+#searches through all the events in the db on title/leader and begin-/end- date
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
