@@ -73,3 +73,4 @@ def createNewsItem(title, content, img):
         created=datetime.datetime.now()
     )
     return Persister.persist_object(item)
+

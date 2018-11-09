@@ -3,6 +3,8 @@ import string, random
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 from flask import jsonify
 import datetime
+from operator import itemgetter
+
 
 months = {'Jan': 'Jan',
           'Feb': 'Feb',
@@ -142,6 +144,8 @@ def getAllEvents():
     if events != 400:
         for event in events:
             leader = Persister.getLeader(event.leader)
+            if (leader == None):
+                leader = ""
             photo = Persister.getProfilePhoto(event.leader)
             createDate = event.created
             created = createDate.strftime('%m/%d/%Y')
@@ -162,13 +166,18 @@ def getAllEvents():
                 for participant in participants:
                     person = Persister.getPerson(participant.person_id)
                     name = person.firstname + " " + person.lastname
-                    participantList.append(name)
-            print(participantList)
+                    participantInfo = {
+                        "id": person.id,
+                        "name": name,
+                        "points": person.points
+                    }
+                    participantList.append(participantInfo)
             result.append({"id": event.id, "name": event.name, "begin": beginDay, "beginMonth": months[beginMonth],
                            "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                            "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
                            "img": event.img, "qrCode": event.qr_code,
-                           "created": created, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList})
+                           "created": created, "link": event.link, "photo": photo, "subscribed": None,
+                           "participants": participantList})
 
     return result
 
@@ -184,3 +193,22 @@ def getAllNewsItems():
                  "link": item.link})
 
     return result
+
+
+def getParticipantInfo(eventId):
+    event = Persister.getEventById(eventId)
+    participantList = []
+    participants = Persister.getAllParticepants(event.id)
+    if participants != 400:
+        for participant in participants:
+            person = Persister.getPerson(participant.person_id)
+            name = person.firstname + " " + person.lastname
+            participantInfo = {
+                "id": person.id,
+                "name": name,
+                "points": person.points
+            }
+            participantList.append(participantInfo)
+    sortedList = sorted(participantList, key=itemgetter('name'))
+
+    return sortedList
