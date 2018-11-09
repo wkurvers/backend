@@ -1,4 +1,4 @@
-from Database import Persister, Content
+from Database import Persister, Content, Person
 import datetime
 
 def getPerson(person_id):

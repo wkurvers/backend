@@ -33,6 +33,7 @@ def route(path):
     return render_template('index.html')
 
 
+#sends the event to the wordpress website and sends a notification to the app
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
     data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
@@ -71,13 +72,11 @@ def createEventTrigger():
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return jsonify({'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
+        return jsonify({"responseCode": 400, 'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
     else:
         response = LoginForm.loginUser(request.get_json())
-        if response['boolean'] == "true":
-            return jsonify(response)
-        else:
-            return jsonify(response)
+        return jsonify(response)
+
 
 
 # check if user is loggedin using current_user from flask.
@@ -89,9 +88,9 @@ def loginCheck():
 @app.route('/logout', methods=['POST'])
 def logout():
     data = request.get_json()
-    return jsonify({"value": LoginForm.logoutUser(data)})
+    return jsonify(LoginForm.logoutUser(data))
 
-
+#generates a security code and sends it via email to the user
 @app.route('/changeEmailRequest', methods=['POST'])
 def changeMail():
     data = request.get_json()
@@ -123,6 +122,7 @@ def changeMail():
     return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
 
 
+#changes the email of the user if the security code is correct
 @app.route('/changeUserEmail', methods=['POST'])
 def changeUserEmail():
     data = request.get_json()
@@ -155,13 +155,14 @@ def changeUserEmail():
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
 
+#generates a new password and sends it to the user via email
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
     if (request.method == "POST"):
         data = json.loads(request.data)
         email = data['email']
         if (UserApi.getEmail(email) == None):
-            return jsonify({"boolean": "false"})
+            return jsonify({"boolean": False, "responseCode": 400})
         newPass = getNewPassword(email)
 
         # create message object instance
@@ -183,16 +184,16 @@ def resetPassword():
         server.login('bslim@grombouts.nl', "bslim")
         server.sendmail('bslim@grombouts.nl', email, msg.as_string())
         server.quit()
-    return " "
+    return jsonify({"boolean": True, "responseCode": 200})
 
-
+#generates a new password
 def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
     email = email
     temp = ''.join(random.choice(chars) for _ in range(size))
     UserApi.saveNewPassword(temp, email)
     return temp
 
-
+#changes the password of a user
 @app.route('/api/changePassword', methods=['POST'])
 def changePassword():
     data = request.get_json()
@@ -206,24 +207,25 @@ def changePassword():
 # points and stampcard
 ################################################################
 
+#returns the amount of stamps a user has
 @app.route('/api/checkPoints', methods=['POST'])
 def checkPoints():
     data = request.get_json()
-    return jsonify({"points": UserApi.checkPoints(data.get('id'))})
+    return jsonify({"points": UserApi.checkPoints(data.get('id')), "responseCode": 200})
 
-
+#adds 1 stamp to a user
 @app.route('/api/addPoint', methods=['POST'])
 def addPoint():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.addPoints(data.get('id'))})
 
-
+#removes 1 stamp from a user
 @app.route('/api/substractPoint', methods=['POST'])
 def substractPoint():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.substractPoint(data.get('id'))})
 
-
+#resets the stampcard of a user
 @app.route('/api/resetStampCard', methods=['POST'])
 def resetStampCard():
     data = request.get_json()
@@ -243,11 +245,10 @@ def getParticipants():
 # events
 ################################################################
 
+#starts the creating of an event on the app side
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-
-    print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -256,19 +257,19 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
-
+#adds a participent entry to the db with a specific event and user
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
-
+#removes a participent entry from the db with a specific event and user
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
     data = request.get_json()
     return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
 
-
+#checks whether a participent entry with a specific event and person exists
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
@@ -281,6 +282,7 @@ def saveMedia():
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
 
+#searches through all the events in the db on title/leader and begin-/end- date
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
@@ -294,7 +296,7 @@ def searchEvent():
 ################################################################
 # news
 ################################################################
-
+#starts the proces of creating a news item on the app side and sends a notification to the app
 @app.route('/api/createNewsItem', methods=['POST'])
 def createNewsItem():
     data = request.get_json()
@@ -314,7 +316,7 @@ def createNewsItem():
                                                            data.get('content'),
                                                            data.get('img'))})
 
-
+#searches through all the news items in the db on title and created date
 @app.route('/api/searchNews', methods=['POST'])
 def searchNews():
     data = request.get_json()
@@ -328,12 +330,13 @@ def searchNews():
 # mentor
 ################################################################
 
+#adds a profilephoto to a leader account
 @app.route('/api/addProfilePhoto', methods=['POST'])
 def addProfilePhoto():
     data = request.get_json()
     return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
 
-
+#returns the profilephote from a leader account
 @app.route('/api/getProfilePhoto', methods=['POST'])
 def getProfilePhoto():
     data = request.get_json()
@@ -373,13 +376,17 @@ def findEvent():
 def registerNormalUser():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 0)})
 
+@app.route('/facebookLogin', methods=['POST'])
+def facebookLogin():
+    return jsonify(LoginForm.facebookLogin(request.get_json()))
+
 
 # Is called to register a new admin
 @app.route('/register-admin', methods=['POST'])
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
-
+#returns all the events from the db
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
@@ -387,7 +394,7 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {}})
 
-
+#returns all the admins/leaders in the db
 @app.route('/api/getAllAdmins', methods=['POST'])
 def getAdmins():
     result = UserApi.getAllAdmins()
@@ -395,7 +402,7 @@ def getAdmins():
         return jsonify({"responseCode": 200, "admins": result})
     return jsonify({"responseCode": 400, "admins": {}})
 
-
+#returns all the news items from the db
 @app.route('/api/getAllNewsItems', methods=['GET'])
 def getNews():
     result = eventApi.getAllNewsItems()
@@ -403,6 +410,15 @@ def getNews():
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {}})
 
+@app.route('/api/getAllSubs', methods=['POST'])
+def getAllSubs():
+    data = request.get_json()
+    id = data.get("id")
+    print(id)
+    result = eventApi.getAllSubs(id)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "subs": result})
+    return jsonify({"responseCode": 400, "subs": {}})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)

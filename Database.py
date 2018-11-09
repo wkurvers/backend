@@ -97,10 +97,14 @@ class Persister():
 
     def loginUser(user):
         db = Session()
-        person = db.query(Person).filter(Person.id == user.id).first()
-        person.authenticated = True
-        db.commit()
-        db.close()
+        try:
+            person = db.query(Person).filter(Person.id == user.id).first()
+            person.authenticated = True
+            db.commit()
+            db.close()
+        except:
+            db.close()
+            return False
         return True
 
     def logoutUser(user):
@@ -110,7 +114,6 @@ class Persister():
         db.commit()
         db.close()
         return True
-        return False
 
     def getPassword(email):
         db = Session()
@@ -140,19 +143,14 @@ class Persister():
 
     def remove_object(obj):
         db = Session()
-        print("hallo");
         try:
-            print("trying to delete");
             db.delete(obj)
             db.commit()
-            print("deleted");
         except:
             db.close()
             return 400
         db.close()
         return 200
-
-        # Check if QR code is already scanned
 
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId, personId):
@@ -287,7 +285,6 @@ class Persister():
 
         for news in newsByDate:
             if news.id not in returnData:
-                print(news.title)
                 newsEntry = {}
                 newsEntry['id'] = news.id
                 newsEntry['title'] = news.title
@@ -661,7 +658,35 @@ class Persister():
             db.close()
             return news
         else:
+            db.close()
             return {}
+
+    def getAllSubs(id):
+        db = Session()
+
+        if db.query(Particepant).filter(Particepant.person_id == id).count():
+            eventIds = db.query(Particepant.event_id).filter(Particepant.person_id == id).filter(
+                Particepant.event_scanned == 1).all()
+            db.close()
+            list = []
+            for id in eventIds:
+                list.append(id[0])
+            print("nieuwe ids zijn", list)
+            return list
+        else:
+            db.close()
+            return {}
+
+    def getAllSubbedEvents(eventId):
+        db = Session()
+
+        results = []
+        for id in eventId:
+            event = db.query(Event).filter(Event.id == id).all()
+            results.append(event)
+        db.close()
+        print("dit zijn de evenementen", results)
+        return results
 
 
 Base.metadata.create_all(conn)
