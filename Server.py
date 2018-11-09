@@ -217,19 +217,19 @@ def checkPoints():
 @app.route('/api/addPoint', methods=['POST'])
 def addPoint():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.addPoints(data.get(id))})
+    return jsonify({"responseCode": UserApi.addPoints(data.get('id'))})
 
 #removes 1 stamp from a user
 @app.route('/api/substractPoint', methods=['POST'])
 def substractPoint():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.substractPoint(data.get(id))})
+    return jsonify({"responseCode": UserApi.substractPoint(data.get('id'))})
 
 #resets the stampcard of a user
 @app.route('/api/resetStampCard', methods=['POST'])
 def resetStampCard():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.resetStampCard(data.get(id))})
+    return jsonify({"responseCode": UserApi.resetStampCard(data.get('id'))})
 
 
 ################################################################

@@ -112,12 +112,12 @@ def searchEvent(searchString):
         endTime = end.strftime('%H:%M')
 
         participantList = []
-            participants = Persister.getAllParticepants(event.id)
-            if participants != 400:
-                for participant in participants:
-                    person = Persister.getPerson(participant.person_id)
-                    name = person.firstname + " " + person.lastname
-                    participantList.append(name)
+        participants = Persister.getAllParticepants(event.id)
+        if participants != 400:
+            for participant in participants:
+                person = Persister.getPerson(participant.person_id)
+                name = person.firstname + " " + person.lastname
+                participantList.append(name)
         result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth],
                        "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                        "location": event['location'], "desc": event['desc'], "leader": leader,

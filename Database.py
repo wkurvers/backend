@@ -535,7 +535,6 @@ class Persister():
     def addPoints(id):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-
         person.points = person.points + 1
         db.commit()
         db.close()
