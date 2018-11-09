@@ -622,6 +622,14 @@ class Persister():
             db.close()
             return checks.fixName(fName,lName)
 
+    def getDescription(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            bio = db.query(Person.biography).filter(Person.wordpressKey == id).first()
+            db.close()
+            return bio
+
 
     def getAllEvents():
         db = Session()

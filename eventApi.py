@@ -137,6 +137,7 @@ def getAllEvents():
         for event in events:
             leader = Persister.getLeader(event.leader)
             photo = Persister.getProfilePhoto(event.leader)
+            bio = Persister.getDescription(event.leader)
             createDate = event.created
             created = createDate.strftime('%m/%d/%Y')
 
@@ -162,7 +163,7 @@ def getAllEvents():
                            "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                            "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
                            "img": event.img, "qrCode": event.qr_code,
-                           "created": created, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList})
+                           "created": created,"leaderDesc": bio, "link": event.link, "photo": photo, "subscribed": None, "participants": participantList})
 
     return result
 
