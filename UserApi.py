@@ -74,3 +74,4 @@ def createNewsItem(title, content, img):
     )
     return Persister.persist_object(item)
 
+
