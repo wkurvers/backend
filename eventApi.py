@@ -64,6 +64,8 @@ def createEvent(name, begin, end, location, description, leader, img):
 
 
 def subToEvent(eventId, personId):
+    print(eventId)
+    print(personId)
     if not Persister.checkParticepant(eventId, personId):
         particepant = Particepant(
             person_id=personId,
@@ -79,7 +81,7 @@ def subToEvent(eventId, personId):
 
 
 def checkSubs(personId):
-    return ({"subEvents": Persister.checkParticepant(personId)})
+    return ({"subEvents": Persister.getSubsForPerson(personId)})
 
 
 def unSubToEvent(eventId, personId):
