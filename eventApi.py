@@ -316,5 +316,5 @@ def getAllSubs(id):
                                    "img": e.img, "qrCode": e.qr_code,
                                    "created": created, "link": e.link, "photo": photo, "subscribed": None,
                                    "participants": participantList})
-   return result
+    return result
 
