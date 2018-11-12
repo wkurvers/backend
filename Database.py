@@ -688,5 +688,15 @@ class Persister():
         print("dit zijn de evenementen", results)
         return results
 
+    def getPersons():
+        db = Session()
+        if db.query(Person).count():
+            users = db.query(Person).all()
+            db.close()
+            return users
+        else:
+            db.close()
+            return {}
+
 
 Base.metadata.create_all(conn)
