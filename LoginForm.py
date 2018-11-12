@@ -51,3 +51,4 @@ def facebookLogin(form):
             return {"responseCode": 200, "boolean": "true", "userId": user.id, "wordpresskey": None,"clearance": user.clearance, "msg": "Ingelogd met facebook"}
     else:
         return {"responseCode": 400, "boolean": "false", "userId": None, "clearance": None, "msg": "Kon niet inloggen met facebook"}
+

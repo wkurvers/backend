@@ -18,6 +18,18 @@ months = {'Jan': 'Jan',
           'Nov': 'Nov',
           'Dec': 'Dec'};
 
+months = {'Jan': 'Jan', 
+		  'Feb': 'Feb', 
+		  'Mar': 'Mrt', 
+		  'Apr': 'Apr', 
+		  'May': 'Mei', 
+		  'Jun': 'Jun', 
+		  'Jul': 'Jul', 
+		  'Aug': 'Aug', 
+		  'Sep': 'Sep', 
+		  'Oct': 'Okt', 
+		  'Nov': 'Nov', 
+		  'Dec': 'Dec'};
 
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
@@ -31,37 +43,69 @@ def isScanned(eventId, person_id):
 
 # returns
 def findEvent(qrCode):
-    return Persister.findEvent(qrCode)
+	return Persister.findEvent(qrCode)
+
+def deleteEvent(id):
+	return Persister.remove_event(id)
+
+def createEvent(id,name,begin,end,location,description,leader,img):
+	print("HOI") 
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(id == '' or
+       name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		print(400)
+		return 400
+	event = Event(
+            id=id,
+			name=name,
+			begin=begin,
+			end=end,
+			location=location,
+			desc=description,
+			leader=leader,
+			cancel=0,
+			img=img,
+			qr_code=qr_code,
+			created= datetime.datetime.now(),
+			link= None
+		)
+	print(event)
+	return Persister.persist_object(event)
 
 
-def createEvent(name, begin, end, location, description, leader, img):
-    size = 6
-    chars = string.ascii_uppercase + string.digits
-    unHashed = ''.join(random.choice(chars) for _ in range(size))
-    qr_code = pbkdf2_sha256.hash(unHashed)
-    if (name == '' or
-            begin == '' or
-            end == '' or
-            location == '' or
-            description == '' or
-            leader == '' or
-            img == ''):
-        return 400
-    event = Event(
-        name=name,
-        begin=begin,
-        end=end,
-        location=location,
-        desc=description,
-        leader=leader,
-        cancel=0,
-        img=img,
-        qr_code=qr_code,
-        created=datetime.datetime.now(),
-        link=None
-    )
-    return Persister.persist_object(event)
-
+def updateEvent(id,name,begin,end,location,description,leader,img):
+	print("HOI") 
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(id == '' or
+       name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		return 400
+	print("id " + str(id))
+	print("name " + name)
+	print("begin " + begin)
+	print("end " + end)
+	print("description " + description)
+	print("leader " + str(leader))
+	print("img " + img)
+	print(id)
+	return Persister.update_object(id,name,begin,end,location,description,leader,img, qr_code)
 
 def subToEvent(eventId, personId):
     if not Persister.checkParticepant(eventId, personId):
@@ -272,5 +316,5 @@ def getAllSubs(id):
                                    "img": e.img, "qrCode": e.qr_code,
                                    "created": created, "link": e.link, "photo": photo, "subscribed": None,
                                    "participants": participantList})
+   return result
 
-    return result
