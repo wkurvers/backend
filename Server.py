@@ -189,67 +189,6 @@ def changeUserEmail():
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
-@app.route('/changeEmailRequest', methods=['POST'])
-def changeMail():
-    data = request.get_json()
-    oldEmail = data.get('oldEmail')
-    if UserApi.getEmail(oldEmail) == None:
-        return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
-    user = UserApi.getUserByEmail(oldEmail)
-    if UserApi.changeEmail(user.id) == 200:
-        msg = MIMEMultipart()
-
-        user = UserApi.getUserByEmail(oldEmail)
-        message = "Om je e-mail adres te veranderen is er een veiligheids code gegenereerd: " + user.securityCode + ". Vul deze code in de app in en voer u nieuwe e-mail adres in."
-
-        # setup the parameters of the message
-        msg['From'] = "bslim@grombouts.nl"
-        msg['To'] = oldEmail
-        msg['Subject'] = "E-mail veranderen"
-
-        # add in the message body
-        msg.attach(MIMEText(message, 'plain'))
-
-        # Send the message via our own SMTP server.
-        server = smtplib.SMTP('mail.grombouts.nl', 587)
-        server.starttls()
-        server.login('bslim@grombouts.nl', "bslim")
-        server.sendmail('bslim@grombouts.nl', oldEmail, msg.as_string())
-        server.quit()
-        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
-    return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
-
-@app.route('/changeUserEmail', methods=['POST'])
-def changeUserEmail():
-    data = request.get_json()
-    oldEmail = data.get('oldEmail')
-    newEmail = data.get('newEmail')
-    secCode = data.get('secCode')
-    if not UserApi.checkSecCode(oldEmail,secCode):
-        return jsonify({'responseCode': 400, 'msg': "Veiligheidscode is ongeldig."})
-    if UserApi.changeUserEmail(oldEmail, newEmail) == 200:
-        msg = MIMEMultipart()
-
-        user = UserApi.getUserByEmail(newEmail)
-        message = "Uw e-mail adres is succesvol verandert."
-
-        # setup the parameters of the message
-        msg['From'] = "bslim@grombouts.nl"
-        msg['To'] = newEmail
-        msg['Subject'] = "E-mail adres verandert"
-
-        # add in the message body
-        msg.attach(MIMEText(message, 'plain'))
-
-        # Send the message via our own SMTP server.
-        server = smtplib.SMTP('mail.grombouts.nl', 587)
-        server.starttls()
-        server.login('bslim@grombouts.nl', "bslim")
-        server.sendmail('bslim@grombouts.nl', newEmail, msg.as_string())
-        server.quit()
-        return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
-    return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
-
 #generates a new password and sends it to the user via email
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
@@ -392,15 +331,6 @@ def searchEvent():
 # news
 ################################################################
 #starts the proces of creating a news item on the app side and sends a notification to the app
-@app.route('/api/createNewsItem', methods=['POST'])
-def createNewsItem():
-    data = request.get_json()
-
-    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
-    appId = "893db161-0c60-438b-af84-8520b89c6d93"
-    header = {"Content-Type": "application/json; charset=utf-8",
-              "Authorization": "Basic " + apiKey}
-
 @app.route('/api/createNewsItem', methods=['GET'])
 def createNewsItem():
     data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/"+request.args.get("id")).json()
@@ -529,22 +459,6 @@ def getAllSubs():
         return jsonify({"responseCode": 200, "subs": result})
     return jsonify({"responseCode": 400, "subs": {}})
 
-@app.route('/api/getAllAdmins', methods=['POST'])
-def getAdmins():
-    result = UserApi.getAllAdmins()
-    print(result)
-    if len(result) > 0:
-        return jsonify({"responseCode": 200, "admins": result})
-    return jsonify({"responseCode": 400, "admins": {}})
-
-
-@app.route('/api/getAllNewsItems', methods=['GET'])
-def getNews():
-    result =  eventApi.getAllNewsItems()
-    if len(result) > 0:
-        return jsonify({"responseCode": 200, "news": result})
-    return jsonify({"responseCode": 400, "news": {} })
-
 @app.route('/api/sendFeedbackForm', methods=['POST'])
 def sendFeedbackForm():
     data = request.get_json()
@@ -575,7 +489,6 @@ def sendFeedbackForm():
         return jsonify({'responseCode': 200, 'msg': 'Bedankt voor uw feedack.'})
     else:
         return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
-
 
 
 if __name__ == "__main__":
