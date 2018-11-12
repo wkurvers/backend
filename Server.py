@@ -57,7 +57,7 @@ def createEventTrigger():
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
-    print("YAY") 
+    print("YAY")
     #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     print(data["author"])
     return jsonify({"responseCode": eventApi.createEvent(request.args.get("id"),
@@ -83,7 +83,7 @@ def updateEventTrigger():
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
                   "Authorization": "Basic " + apiKey}
-        
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
@@ -344,7 +344,7 @@ def createNewsItem():
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
                 "Authorization": "Basic " + apiKey}
-    
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
@@ -478,8 +478,38 @@ def getAllSubs():
         return jsonify({"responseCode": 200, "subs": result})
     return jsonify({"responseCode": 400, "subs": {}})
 
+@app.route('/api/sendFeedbackForm', methods=['POST'])
+def sendFeedbackForm():
+    data = request.get_json()
+    email = data.get('email')
+    subject = data.get('subject')
+    problem = data.get('problem')
 
+    if UserApi.checkEmailExistance(email):
+        msg = MIMEMultipart()
+
+        message = "onderwerp:" + subject + + "\n" + "probleem:" + problem
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = "bslim@grombouts.nl"
+        msg['Subject'] = "Feedback van gebruiker"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', 'bslim@grombouts.nl', msg.as_string())
+        server.quit()
+        print("ok")
+        return jsonify({'responseCode': 200, 'msg': 'Bedankt voor uw feedack.'})
+    else:
+        return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+
 
