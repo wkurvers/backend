@@ -29,13 +29,17 @@ def isScanned(eventId, person_id):
 def findEvent(qrCode):
 	return Persister.findEvent(qrCode)
 
-def createEvent(name,begin,end,location,description,leader,img):
+def deleteEvent(id):
+	return Persister.remove_event(id)
+
+def createEvent(id,name,begin,end,location,description,leader,img):
 	print("HOI") 
 	size=6
 	chars=string.ascii_uppercase + string.digits
 	unHashed = ''.join(random.choice(chars) for _ in range(size))
 	qr_code = pbkdf2_sha256.hash(unHashed)
-	if(name == '' or
+	if(id == '' or
+       name == '' or
 	   begin == '' or
 	   end == '' or
 	   location == '' or
@@ -45,6 +49,7 @@ def createEvent(name,begin,end,location,description,leader,img):
 		print(400)
 		return 400
 	event = Event(
+            id=id,
 			name=name,
 			begin=begin,
 			end=end,
@@ -59,6 +64,31 @@ def createEvent(name,begin,end,location,description,leader,img):
 		)
 	print(event)
 	return Persister.persist_object(event)
+
+def updateEvent(id,name,begin,end,location,description,leader,img):
+	print("HOI") 
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(id == '' or
+       name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		return 400
+	print("id " + str(id))
+	print("name " + name)
+	print("begin " + begin)
+	print("end " + end)
+	print("description " + description)
+	print("leader " + str(leader))
+	print("img " + img)
+	print(id)
+	return Persister.update_object(id,name,begin,end,location,description,leader,img, qr_code)
 
 def subToEvent(eventId, personId):
 	if not Persister.checkParticepant(eventId, personId):
@@ -161,3 +191,17 @@ def getAllNewsItems():
 			result.append({"id": item.id, "url": item.url, "title": item.title,"desc": item.desc,"created": item.created,"link":item.link})
 
 	return result
+
+def getAllSubs(id):
+    eventIds = Persister.getAllSubs(id)
+    print(eventIds)
+
+    result = []
+    if eventIds != 400:
+        for item in eventIds:
+            print(item[0])
+            eventName = Persister.getEventName(item[0])
+            result.append(
+                {"title": eventName})
+
+    return result

@@ -32,11 +32,17 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+@app.route('/api/deleteEventTrigger', methods=['GET'])
+def deleteEventTrigger():
+    id = request.args.get("id")
+    return jsonify({"responseCode": eventApi.deleteEvent(id)})
 
 
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
     data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    print(data)
+    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('img')
     img = " "
@@ -52,16 +58,45 @@ def createEventTrigger():
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
     print("YAY") 
-    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     print(data["author"])
-    return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
+    return jsonify({"responseCode": eventApi.createEvent(request.args.get("id"),
+                                                         data["title"]["rendered"],
                                                          data["start"],
                                                          data["end"],
-                                                         'Peizerweg 48',
+                                                         address['name'],
                                                          data["content"]["rendered"],
                                                          data["author"],
                                                          img)})
 
+@app.route('/api/updateEventTrigger', methods=['GET'])
+def updateEventTrigger():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    print(data)
+    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                  "Authorization": "Basic " + apiKey}
+        
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuw evenement van Bslim!"},
+               "headings": {"en": data["title"]["rendered"]}}
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    return jsonify({"responseCode": eventApi.updateEvent(request.args.get("id"),
+                                                         data["title"]["rendered"],
+                                                         data["start"],
+                                                         data["end"],
+                                                         address['name'],
+                                                         data["content"]["rendered"],
+                                                         data["author"],
+                                                         img)})
 ################################################################
 # login/logout
 ################################################################
@@ -274,14 +309,29 @@ def searchEvent():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {} })
 
+@app.route('/api/getAllSubs', methods=['POST'])
+def getAllSubs():
+    data = request.get_json()
+    id = data.get("id")
+    print(id)
+    result = eventApi.getAllSubs(id)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "subs": result})
+    return jsonify({"responseCode": 400, "subs": {}})
+
 
 ################################################################
 # news
 ################################################################
 
-@app.route('/api/createNewsItem', methods=['POST'])
+@app.route('/api/createNewsItem', methods=['GET'])
 def createNewsItem():
-    data = request.get_json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/"+request.args.get("id")).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
 
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
@@ -292,11 +342,11 @@ def createNewsItem():
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
-     
-    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-    return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
-                                                         data.get('content'),
-                                                         data.get('img'))})
+    print(data['title']['rendered'])
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    return jsonify({"responseCode": UserApi.createNewsItem(data["title"]["rendered"],
+                                                         data["content"]["rendered"],
+                                                         img)})
 
 
 @app.route('/api/searchNews', methods=['POST'])

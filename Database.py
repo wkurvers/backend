@@ -10,6 +10,7 @@ import checks
 import re
 import random, string
 import hashlib
+import datetime
 
 
 conn = sqla.create_engine('mysql+pymysql://bslim:bslim_hanze!@localhost/bslim?charset=utf8')
@@ -123,6 +124,23 @@ class Persister():
         db.close()
         return user
 
+    def remove_event(id):
+        db = Session()
+        try:            
+            particepant = db.query(Particepant).filter(Particepant.event_id == id).first()
+            print(particepant)
+            if particepant != None:
+                db.delete(particepant)
+                db.commit()
+            event = db.query(Event).filter(Event.id == id).first()
+            db.delete(event)
+            db.commit()
+        except:
+            db.close()
+            return 400
+        db.close()
+        return 200
+    
     def persist_object(obj):
         db = Session()
         try:
@@ -134,6 +152,45 @@ class Persister():
         db.close()
         return 200
 
+    def update_object(id,name,begin,end,location,description,leader,img, qr_code):
+        db = Session()
+        try:
+            event = db.query(Event).filter(Event.id == id).first()
+            if(event == None):
+                obj = Event(
+                    id=id,
+                    name=name,
+                    begin=begin,
+                    end=end,
+                    location=location,
+                    desc=description,
+                    leader=leader,
+                    cancel=0,
+                    img=img,
+                    qr_code=qr_code,
+                    created= datetime.datetime.now(),
+                    link= None
+                )
+                db.add(obj)
+                db.commit()
+            else:
+                event.name=name
+                event.begin=begin
+                event.end=begin
+                event.desc=description
+                event.leader=leader
+                event.cancel=0
+                event.img=img
+                event.qr_code=qr_code
+                event.link= ''
+                db.commit()
+        except:
+            db.close()
+            print("OH NO")
+            return 400
+        db.close()
+        return 200
+    
     def remove_object(obj):
         db = Session()
         print("hallo");
@@ -645,5 +702,24 @@ class Persister():
             return news
         else:
             return {}
+        
+    def getAllSubs(id):
+        db = Session()
+
+        if db.query(Particepant).filter(Particepant.person_id == id).count():
+            eventIds = db.query(Particepant.event_id).filter(Particepant.person_id == id).all()
+            db.close()
+            return eventIds
+        else:
+            db.close()
+            return {}
+
+
+    def getEventName(item):
+        db = Session()
+
+        eventNames = db.query(Event.name).filter(Event.id == item).all()
+        db.close()
+        return eventNames
 
 Base.metadata.create_all(conn)
