@@ -78,7 +78,7 @@ def subToEvent(eventId, personId):
              "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
 
 
-def findSub(personId):
+def checkSubs(personId):
     return ({"subEvents": Persister.checkParticepant(personId)})
 
 
@@ -190,7 +190,6 @@ def getAllEvents():
                            "img": event.img, "qrCode": event.qr_code,
                            "created": created, "link": event.link, "photo": photo, "subscribed": None,
                            "participants": participantList})
-
     return result
 
 
