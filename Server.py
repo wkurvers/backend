@@ -32,17 +32,21 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+
 @app.route('/api/deleteEventTrigger', methods=['GET'])
 def deleteEventTrigger():
     id = request.args.get("id")
     return jsonify({"responseCode": eventApi.deleteEvent(id)})
 
 
+# sends the event to the wordpress website and sends a notification to the app
+
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
-    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
     print(data)
-    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
+    address = requests.get(
+        "http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('img')
     img = " "
@@ -58,7 +62,7 @@ def createEventTrigger():
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
     print("YAY")
-    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    # req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     print(data["author"])
     return jsonify({"responseCode": eventApi.createEvent(request.args.get("id"),
                                                          data["title"]["rendered"],
@@ -69,11 +73,13 @@ def createEventTrigger():
                                                          data["author"],
                                                          img)})
 
+
 @app.route('/api/updateEventTrigger', methods=['GET'])
 def updateEventTrigger():
-    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
     print(data)
-    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
+    address = requests.get(
+        "http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('img')
     img = " "
@@ -82,13 +88,13 @@ def updateEventTrigger():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                  "Authorization": "Basic " + apiKey}
+              "Authorization": "Basic " + apiKey}
 
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data["title"]["rendered"]}}
-    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    # req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": eventApi.updateEvent(request.args.get("id"),
                                                          data["title"]["rendered"],
                                                          data["start"],
@@ -97,6 +103,7 @@ def updateEventTrigger():
                                                          data["content"]["rendered"],
                                                          data["author"],
                                                          img)})
+
 
 ################################################################
 # login/logout
@@ -107,11 +114,11 @@ def updateEventTrigger():
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return jsonify({"responseCode": 400, 'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
+        return jsonify(
+            {"responseCode": 400, 'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
     else:
         response = LoginForm.loginUser(request.get_json())
         return jsonify(response)
-
 
 
 # check if user is loggedin using current_user from flask.
@@ -125,7 +132,8 @@ def logout():
     data = request.get_json()
     return jsonify(LoginForm.logoutUser(data))
 
-#generates a security code and sends it via email to the user
+
+# generates a security code and sends it via email to the user
 @app.route('/changeEmailRequest', methods=['POST'])
 def changeMail():
     data = request.get_json()
@@ -157,7 +165,7 @@ def changeMail():
     return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
 
 
-#changes the email of the user if the security code is correct
+# changes the email of the user if the security code is correct
 @app.route('/changeUserEmail', methods=['POST'])
 def changeUserEmail():
     data = request.get_json()
@@ -189,7 +197,9 @@ def changeUserEmail():
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
-#generates a new password and sends it to the user via email
+
+# generates a new password and sends it to the user via email
+
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
     if (request.method == "POST"):
@@ -220,14 +230,16 @@ def resetPassword():
         server.quit()
     return jsonify({"boolean": True, "responseCode": 200})
 
-#generates a new password
+
+# generates a new password
 def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
     email = email
     temp = ''.join(random.choice(chars) for _ in range(size))
     UserApi.saveNewPassword(temp, email)
     return temp
 
-#changes the password of a user
+
+# changes the password of a user
 @app.route('/api/changePassword', methods=['POST'])
 def changePassword():
     data = request.get_json()
@@ -241,29 +253,33 @@ def changePassword():
 # points and stampcard
 ################################################################
 
-#returns the amount of stamps a user has
+# returns the amount of stamps a user has
 @app.route('/api/checkPoints', methods=['POST'])
 def checkPoints():
     data = request.get_json()
     return jsonify({"points": UserApi.checkPoints(data.get('id')), "responseCode": 200})
 
-#adds 1 stamp to a user
+
+# adds 1 stamp to a user
 @app.route('/api/addPoint', methods=['POST'])
 def addPoint():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.addPoints(data.get('id'))})
 
-#removes 1 stamp from a user
+
+# removes 1 stamp from a user
 @app.route('/api/substractPoint', methods=['POST'])
 def substractPoint():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.substractPoint(data.get('id'))})
 
-#resets the stampcard of a user
+
+# resets the stampcard of a user
 @app.route('/api/resetStampCard', methods=['POST'])
 def resetStampCard():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.resetStampCard(data.get('id'))})
+
 
 @app.route('/api/getParticipants', methods=['POST'])
 def getParticipants():
@@ -278,7 +294,7 @@ def getParticipants():
 # events
 ################################################################
 
-#starts the creating of an event on the app side
+# starts the creating of an event on the app side
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
@@ -290,20 +306,23 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
-#adds a participent entry to the db with a specific event and user
+
+# adds a participent entry to the db with a specific event and user
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
 
-#removes a participent entry from the db with a specific event and user
+# removes a participent entry from the db with a specific event and user
+
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
     data = request.get_json()
     return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
 
-#checks whether a participent entry with a specific event and person exists
+
+# checks whether a participent entry with a specific event and person exists
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
@@ -316,7 +335,7 @@ def saveMedia():
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
 
-#searches through all the events in the db on title/leader and begin-/end- date
+# searches through all the events in the db on title/leader and begin-/end- date
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
@@ -330,10 +349,11 @@ def searchEvent():
 ################################################################
 # news
 ################################################################
-#starts the proces of creating a news item on the app side and sends a notification to the app
+
+# starts the proces of creating a news item on the app side and sends a notification to the app
 @app.route('/api/createNewsItem', methods=['GET'])
 def createNewsItem():
-    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/"+request.args.get("id")).json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/" + request.args.get("id")).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('video')
     img = " "
@@ -343,18 +363,17 @@ def createNewsItem():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                "Authorization": "Basic " + apiKey}
+              "Authorization": "Basic " + apiKey}
 
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
 
-    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    # req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data["title"]["rendered"],
-                                                         data["content"]["rendered"],
-                                                         img)})
-
+                                                           data["content"]["rendered"],
+                                                           img)})
 
 
 @app.route('/api/createNewsItemApp', methods=['POST'])
@@ -363,20 +382,20 @@ def createNewsItemApp():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                "Authorization": "Basic " + apiKey}
-    
+              "Authorization": "Basic " + apiKey}
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
 
-    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    # req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data["title"],
-                                                         data["content"],
-                                                         data["img"])})
+                                                           data["content"],
+                                                           data["img"])})
 
 
-#searches through all the news items in the db on title and created date
+# searches through all the news items in the db on title and created date
 @app.route('/api/searchNews', methods=['POST'])
 def searchNews():
     data = request.get_json()
@@ -384,17 +403,20 @@ def searchNews():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {}})
+
+
 ################################################################
 # mentor
 ################################################################
 
-#adds a profilephoto to a leader account
+# adds a profilephoto to a leader account
 @app.route('/api/addProfilePhoto', methods=['POST'])
 def addProfilePhoto():
     data = request.get_json()
     return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
 
-#returns the profilephote from a leader account
+
+# returns the profilephote from a leader account
 @app.route('/api/getProfilePhoto', methods=['POST'])
 def getProfilePhoto():
     data = request.get_json()
@@ -434,6 +456,7 @@ def findEvent():
 def registerNormalUser():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 0)})
 
+
 @app.route('/facebookLogin', methods=['POST'])
 def facebookLogin():
     return jsonify(LoginForm.facebookLogin(request.get_json()))
@@ -444,7 +467,8 @@ def facebookLogin():
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
-#returns all the events from the db
+
+# returns all the events from the db
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
@@ -452,7 +476,8 @@ def getEvents():
         return jsonify({"responseCode": 200, "events": result})
     return jsonify({"responseCode": 400, "events": {}})
 
-#returns all the admins/leaders in the db
+
+# returns all the admins/leaders in the db
 @app.route('/api/getAllAdmins', methods=['POST'])
 def getAdmins():
     result = UserApi.getAllAdmins()
@@ -460,13 +485,15 @@ def getAdmins():
         return jsonify({"responseCode": 200, "admins": result})
     return jsonify({"responseCode": 400, "admins": {}})
 
-#returns all the news items from the db
+
+# returns all the news items from the db
 @app.route('/api/getAllNewsItems', methods=['GET'])
 def getNews():
     result = eventApi.getAllNewsItems()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {}})
+
 
 @app.route('/api/getAllSubs', methods=['POST'])
 def getAllSubs():
@@ -477,6 +504,16 @@ def getAllSubs():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "subs": result})
     return jsonify({"responseCode": 400, "subs": {}})
+
+
+@app.route('/api/getUsers', methods=['POST'])
+def getUsers():
+    result = UserApi.getUsers()
+    print(result)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "users": result})
+    return jsonify({"responseCode": 400, "users": {}})
+
 
 @app.route('/api/sendFeedbackForm', methods=['POST'])
 def sendFeedbackForm():
@@ -509,7 +546,6 @@ def sendFeedbackForm():
     else:
         return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
-
-
