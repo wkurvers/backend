@@ -11,6 +11,7 @@ import re
 import random, string
 import hashlib
 
+
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
@@ -49,7 +50,6 @@ class Event(Base):
     qr_code = sqla.Column('qr_code', sqla.VARCHAR(200))
     created = sqla.Column('created', sqla.DATETIME)
     link = sqla.Column('link', sqla.VARCHAR(400))
-
 
 class Content(Base):
     __tablename__ = 'content'
@@ -633,6 +633,14 @@ class Persister():
             return event
         else:
             return 400
+
+    def getDescription(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            bio = db.query(Person.biography).filter(Person.wordpressKey == id).first()
+            db.close()
+            return bio
 
     def getAllEvents():
         db = Session()

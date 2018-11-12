@@ -159,6 +159,7 @@ def getAllEvents():
             if (leader == None):
                 leader = ""
             photo = Persister.getProfilePhoto(event.leader)
+            bio = Persister.getDescription(event.leader)
             createDate = event.created
             created = createDate.strftime('%m/%d/%Y')
 
@@ -188,7 +189,7 @@ def getAllEvents():
                            "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                            "location": event.location, "desc": event.desc, "leader": leader, "cancel": event.cancel,
                            "img": event.img, "qrCode": event.qr_code,
-                           "created": created, "link": event.link, "photo": photo, "subscribed": None,
+                           "created": created,"leaderDesc": bio, "link": event.link, "photo": photo, "subscribed": None,
                            "participants": participantList})
     return result
 
@@ -234,8 +235,11 @@ def getAllSubs(id):
         for event in events:
             for e in event:
                 leader = Persister.getLeader(e.leader)
+                if (leader == None):
+                 leader = ""
                 photo = Persister.getProfilePhoto(e.leader)
                 createDate = e.created
+                bio = Persister.getDescription(e.leader)
                 created = createDate.strftime('%m/%d/%Y')
 
                 begin = e.begin
@@ -254,7 +258,12 @@ def getAllSubs(id):
                     for participant in participants:
                         person = Persister.getPerson(participant.person_id)
                         name = person.firstname + " " + person.lastname
-                        participantList.append(name)
+                        participantInfo = {
+                            "id": person.id,
+                            "name": name,
+                            "points": person.points
+                        }
+                        participantList.append(participantInfo)
 
                     result.append({"id": e.id, "name": e.name, "begin": beginDay, "beginMonth": months[beginMonth],
                                    "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth],
