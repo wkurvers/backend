@@ -14,7 +14,7 @@ import datetime
 
 
 
-conn = sqla.create_engine('mysql+pymysql://bslim:bslim_hanze!@localhost/bslim?charset=utf8')
+conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -241,7 +241,18 @@ class Persister():
         return 200
 
     # Checks whether or not a particepant entry or beloging events and persons already exists
-    def checkParticepant(personId):
+    def checkParticepant(eventId, personId):
+        db = Session()
+        if(db.query(Event).filter(Event.id == eventId).count()):
+                if(db.query(Person).filter(Person.id == personId).count()):
+                    if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
+                        db.close()
+                        return True
+        db.close()
+        return False
+
+
+    def getSubsForPerson(personId):
         db = Session()
         if (db.query(Person).filter(Person.id == personId).count()):
             particepants = db.query(Particepant).filter(Particepant.person_id == personId).all()
@@ -254,6 +265,7 @@ class Persister():
             return events
         db.close()
         return []
+
 
     def getParticepant(eventId, personId):
         db = Session()
