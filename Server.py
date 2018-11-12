@@ -51,8 +51,8 @@ def createEventTrigger():
     apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
-                  "Authorization": "Basic " + apiKey}
-        
+              "Authorization": "Basic " + apiKey}
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
@@ -97,6 +97,7 @@ def updateEventTrigger():
                                                          data["content"]["rendered"],
                                                          data["author"],
                                                          img)})
+
 ################################################################
 # login/logout
 ################################################################
@@ -106,13 +107,11 @@ def updateEventTrigger():
 @app.route('/login', methods=['POST'])
 def loginPageHandler():
     if current_user.is_authenticated:
-        return jsonify({'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
+        return jsonify({"responseCode": 400, 'value': False, 'clearance': None, 'userId': None, "msg": "U bent al ingelogd"})
     else:
         response = LoginForm.loginUser(request.get_json())
-        if response['boolean'] == "true":
-            return jsonify(response)
-        else:
-            return jsonify(response)
+        return jsonify(response)
+
 
 
 # check if user is loggedin using current_user from flask.
@@ -124,7 +123,71 @@ def loginCheck():
 @app.route('/logout', methods=['POST'])
 def logout():
     data = request.get_json()
-    return jsonify({"value": LoginForm.logoutUser(data)})
+    return jsonify(LoginForm.logoutUser(data))
+
+#generates a security code and sends it via email to the user
+@app.route('/changeEmailRequest', methods=['POST'])
+def changeMail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    if UserApi.getEmail(oldEmail) == None:
+        return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
+    user = UserApi.getUserByEmail(oldEmail)
+    if UserApi.changeEmail(user.id) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(oldEmail)
+        message = "Om je e-mail adres te veranderen is er een veiligheids code gegenereerd: " + user.securityCode + ". Vul deze code in de app in en voer u nieuwe e-mail adres in."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = oldEmail
+        msg['Subject'] = "E-mail veranderen"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', oldEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
+
+
+#changes the email of the user if the security code is correct
+@app.route('/changeUserEmail', methods=['POST'])
+def changeUserEmail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    newEmail = data.get('newEmail')
+    secCode = data.get('secCode')
+    if not UserApi.checkSecCode(oldEmail, secCode):
+        return jsonify({'responseCode': 400, 'msg': "Veiligheidscode is ongeldig."})
+    if UserApi.changeUserEmail(oldEmail, newEmail) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(newEmail)
+        message = "Uw e-mail adres is succesvol verandert."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = newEmail
+        msg['Subject'] = "E-mail adres verandert"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', newEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
 @app.route('/changeEmailRequest', methods=['POST'])
 def changeMail():
@@ -187,13 +250,14 @@ def changeUserEmail():
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
+#generates a new password and sends it to the user via email
 @app.route('/reset-password', methods=['POST'])
 def resetPassword():
     if (request.method == "POST"):
         data = json.loads(request.data)
         email = data['email']
         if (UserApi.getEmail(email) == None):
-            return jsonify({"boolean": "false"})
+            return jsonify({"boolean": False, "responseCode": 400})
         newPass = getNewPassword(email)
 
         # create message object instance
@@ -215,16 +279,16 @@ def resetPassword():
         server.login('bslim@grombouts.nl', "bslim")
         server.sendmail('bslim@grombouts.nl', email, msg.as_string())
         server.quit()
-    return " "
+    return jsonify({"boolean": True, "responseCode": 200})
 
-
+#generates a new password
 def getNewPassword(email, size=6, chars=string.ascii_uppercase + string.digits):
     email = email
     temp = ''.join(random.choice(chars) for _ in range(size))
     UserApi.saveNewPassword(temp, email)
     return temp
 
-
+#changes the password of a user
 @app.route('/api/changePassword', methods=['POST'])
 def changePassword():
     data = request.get_json()
@@ -238,39 +302,47 @@ def changePassword():
 # points and stampcard
 ################################################################
 
+#returns the amount of stamps a user has
 @app.route('/api/checkPoints', methods=['POST'])
 def checkPoints():
     data = request.get_json()
-    return jsonify({"points": UserApi.checkPoints(data.get('id'))})
+    return jsonify({"points": UserApi.checkPoints(data.get('id')), "responseCode": 200})
 
-
+#adds 1 stamp to a user
 @app.route('/api/addPoint', methods=['POST'])
 def addPoint():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.addPoints(data.get(id))})
+    return jsonify({"responseCode": UserApi.addPoints(data.get('id'))})
 
-
+#removes 1 stamp from a user
 @app.route('/api/substractPoint', methods=['POST'])
 def substractPoint():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.substractPoint(data.get(id))})
+    return jsonify({"responseCode": UserApi.substractPoint(data.get('id'))})
 
-
+#resets the stampcard of a user
 @app.route('/api/resetStampCard', methods=['POST'])
 def resetStampCard():
     data = request.get_json()
-    return jsonify({"responseCode": UserApi.resetStampCard(data.get(id))})
+    return jsonify({"responseCode": UserApi.resetStampCard(data.get('id'))})
+
+@app.route('/api/getParticipants', methods=['POST'])
+def getParticipants():
+    data = request.get_json()
+    result = eventApi.getParticipantInfo(data.get('eventId'))
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "participants": result})
+    return jsonify({"responseCode": 400, "participants": {}})
 
 
 ################################################################
 # events
 ################################################################
 
+#starts the creating of an event on the app side
 @app.route('/api/createEvent', methods=['POST'])
 def createEvent():
     data = request.get_json()
-
-    print(data)
     return jsonify({"responseCode": eventApi.createEvent(data.get('name'),
                                                          data.get('begin'),
                                                          data.get('end'),
@@ -279,27 +351,33 @@ def createEvent():
                                                          data.get('leader'),
                                                          data.get('img'))})
 
-
+#adds a participent entry to the db with a specific event and user
 @app.route('/api/subToEvent', methods=['POST'])
 def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
+
+#removes a participent entry from the db with a specific event and user
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
     data = request.get_json()
     return jsonify(eventApi.unSubToEvent(data.get("eventId"), data.get("personId")))
 
+#checks whether a participent entry with a specific event and person exists
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
-    return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
-  
+    return jsonify(eventApi.checkSubs(data.get("personId")))
+
+
 @app.route('/api/saveMedia', methods=['POST'])
 def saveMedia():
     data = request.get_json()
     return eventApi.saveMedia(data.get("url"), data.get("eventName"))
 
+
+#searches through all the events in the db on title/leader and begin-/end- date
 @app.route('/api/searchEvent', methods=['POST'])
 def searchEvent():
     data = request.get_json()
@@ -307,22 +385,21 @@ def searchEvent():
     result = eventApi.searchEvent(data.get("searchString"))
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
-
-@app.route('/api/getAllSubs', methods=['POST'])
-def getAllSubs():
-    data = request.get_json()
-    id = data.get("id")
-    print(id)
-    result = eventApi.getAllSubs(id)
-    if len(result) > 0:
-        return jsonify({"responseCode": 200, "subs": result})
-    return jsonify({"responseCode": 400, "subs": {}})
+    return jsonify({"responseCode": 400, "events": {}})
 
 
 ################################################################
 # news
 ################################################################
+#starts the proces of creating a news item on the app side and sends a notification to the app
+@app.route('/api/createNewsItem', methods=['POST'])
+def createNewsItem():
+    data = request.get_json()
+
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+              "Authorization": "Basic " + apiKey}
 
 @app.route('/api/createNewsItem', methods=['GET'])
 def createNewsItem():
@@ -337,36 +414,38 @@ def createNewsItem():
     appId = "893db161-0c60-438b-af84-8520b89c6d93"
     header = {"Content-Type": "application/json; charset=utf-8",
                 "Authorization": "Basic " + apiKey}
-        
+    
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
-    print(data['title']['rendered'])
+
     #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     return jsonify({"responseCode": UserApi.createNewsItem(data["title"]["rendered"],
                                                          data["content"]["rendered"],
                                                          img)})
 
 
+
+#searches through all the news items in the db on title and created date
 @app.route('/api/searchNews', methods=['POST'])
 def searchNews():
     data = request.get_json()
     result = eventApi.searchNews(data.get("searchString"))
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
-    return jsonify({"responseCode": 400, "news": {} })
-
+    return jsonify({"responseCode": 400, "news": {}})
 ################################################################
 # mentor
 ################################################################
 
+#adds a profilephoto to a leader account
 @app.route('/api/addProfilePhoto', methods=['POST'])
 def addProfilePhoto():
     data = request.get_json()
     return UserApi.addProfilePhoto(data.get('url'), data.get('id'))
 
-
+#returns the profilephote from a leader account
 @app.route('/api/getProfilePhoto', methods=['POST'])
 def getProfilePhoto():
     data = request.get_json()
@@ -406,19 +485,49 @@ def findEvent():
 def registerNormalUser():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 0)})
 
+@app.route('/facebookLogin', methods=['POST'])
+def facebookLogin():
+    return jsonify(LoginForm.facebookLogin(request.get_json()))
+
 
 # Is called to register a new admin
 @app.route('/register-admin', methods=['POST'])
 def registerAdmin():
     return jsonify({"responseCode": RegisterForm.registerSubmit(request.get_json(), 1)})
 
+#returns all the events from the db
 @app.route('/api/getAllEvents', methods=['POST'])
 def getEvents():
     result = eventApi.getAllEvents()
     if len(result) > 0:
         return jsonify({"responseCode": 200, "events": result})
-    return jsonify({"responseCode": 400, "events": {} })
+    return jsonify({"responseCode": 400, "events": {}})
 
+#returns all the admins/leaders in the db
+@app.route('/api/getAllAdmins', methods=['POST'])
+def getAdmins():
+    result = UserApi.getAllAdmins()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "admins": result})
+    return jsonify({"responseCode": 400, "admins": {}})
+
+#returns all the news items from the db
+@app.route('/api/getAllNewsItems', methods=['GET'])
+def getNews():
+    result = eventApi.getAllNewsItems()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {}})
+
+@app.route('/api/getAllSubs', methods=['POST'])
+def getAllSubs():
+    data = request.get_json()
+    id = data.get("id")
+    print(id)
+    result = eventApi.getAllSubs(id)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "subs": result})
+    return jsonify({"responseCode": 400, "subs": {}})
 
 @app.route('/api/getAllAdmins', methods=['POST'])
 def getAdmins():
@@ -438,3 +547,4 @@ def getNews():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+

@@ -13,22 +13,24 @@ import hashlib
 import datetime
 
 
+
 conn = sqla.create_engine('mysql+pymysql://bslim:bslim_hanze!@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
 Base = declarative_base()
 
-class Person(Base,UserMixin):
+
+class Person(Base, UserMixin):
     __tablename__ = 'person'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
     firstname = sqla.Column('firstname', sqla.VARCHAR(64))
     lastname = sqla.Column('lastname', sqla.VARCHAR(64))
     email = sqla.Column('email', sqla.VARCHAR(64), unique=True)
     password = sqla.Column('password', sqla.VARCHAR(64))
-    points = sqla.Column('points',sqla.Integer)
-    clearance = sqla.Column('clearance',sqla.Integer)
-    license = sqla.Column('license',sqla.Boolean)
+    points = sqla.Column('points', sqla.Integer)
+    clearance = sqla.Column('clearance', sqla.Integer)
+    license = sqla.Column('license', sqla.Boolean)
     authenticated = sqla.Column('authenticated', sqla.Boolean)
     biography = sqla.Column('biography', sqla.VARCHAR(1000))
     profilePhoto = sqla.Column('profilePhoto', sqla.VARCHAR(400))
@@ -38,38 +40,40 @@ class Person(Base,UserMixin):
 
 class Event(Base):
     __tablename__ = 'event'
-    id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
-    name = sqla.Column('name',sqla.VARCHAR(64))
-    begin = sqla.Column('begin',sqla.DATETIME)
-    end = sqla.Column('end',sqla.DATETIME)
-    location = sqla.Column('location',sqla.VARCHAR(64))
-    desc = sqla.Column('desc',sqla.VARCHAR(200))
-    leader = sqla.Column('leader',sqla.Integer,sqla.ForeignKey('person.wordpressKey'))
-    cancel = sqla.Column('cancel',sqla.Integer)
-    img = sqla.Column('img',sqla.VARCHAR(400))
-    qr_code = sqla.Column('qr_code',sqla.VARCHAR(200))
-    created = sqla.Column('created',sqla.DATETIME)
-    link = sqla.Column('link',sqla.VARCHAR(400))
+    id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
+    name = sqla.Column('name', sqla.VARCHAR(64))
+    begin = sqla.Column('begin', sqla.DATETIME)
+    end = sqla.Column('end', sqla.DATETIME)
+    location = sqla.Column('location', sqla.VARCHAR(64))
+    desc = sqla.Column('desc', sqla.VARCHAR(2000))
+    leader = sqla.Column('leader', sqla.Integer, sqla.ForeignKey('person.wordpressKey'))
+    cancel = sqla.Column('cancel', sqla.Integer)
+    img = sqla.Column('img', sqla.VARCHAR(400))
+    qr_code = sqla.Column('qr_code', sqla.VARCHAR(200))
+    created = sqla.Column('created', sqla.DATETIME)
+    link = sqla.Column('link', sqla.VARCHAR(400))
 
 class Content(Base):
     __tablename__ = 'content'
-    id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True , unique=True)
-    url = sqla.Column('url',sqla.VARCHAR(400))
-    title = sqla.Column('title',sqla.VARCHAR(64))
-    desc = sqla.Column('desc',sqla.VARCHAR(300))
-    link = sqla.Column('link',sqla.VARCHAR(500))
-    created = sqla.Column('created',sqla.DATETIME)
+    id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
+    url = sqla.Column('url', sqla.VARCHAR(400))
+    title = sqla.Column('title', sqla.VARCHAR(64))
+    desc = sqla.Column('desc', sqla.VARCHAR(300))
+    link = sqla.Column('link', sqla.VARCHAR(500))
+    created = sqla.Column('created', sqla.DATETIME)
+
 
 class Particepant(Base):
     __tablename__ = 'particepant'
-    person_id = sqla.Column('person_id',sqla.Integer,sqla.ForeignKey('person.id'), primary_key=True)
-    event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
-    event_scanned = sqla.Column('event_scanned',sqla.Boolean)
+    person_id = sqla.Column('person_id', sqla.Integer, sqla.ForeignKey('person.id'), primary_key=True)
+    event_id = sqla.Column('event_id', sqla.Integer, sqla.ForeignKey('event.id'), primary_key=True)
+    event_scanned = sqla.Column('event_scanned', sqla.Boolean)
+
 
 class Media(Base):
     __tablename__ = 'media'
-    event_id = sqla.Column('event_id',sqla.Integer,sqla.ForeignKey('event.id'), primary_key=True)
-    url = sqla.Column('url',sqla.VARCHAR(400))
+    event_id = sqla.Column('event_id', sqla.Integer, sqla.ForeignKey('event.id'), primary_key=True)
+    url = sqla.Column('url', sqla.VARCHAR(400))
 
 class Persister():
     def getPerson(id):
@@ -94,10 +98,14 @@ class Persister():
 
     def loginUser(user):
         db = Session()
-        person = db.query(Person).filter(Person.id == user.id).first()
-        person.authenticated = True
-        db.commit()
-        db.close()
+        try:
+            person = db.query(Person).filter(Person.id == user.id).first()
+            person.authenticated = True
+            db.commit()
+            db.close()
+        except:
+            db.close()
+            return False
         return True
 
     def logoutUser(user):
@@ -107,7 +115,6 @@ class Persister():
         db.commit()
         db.close()
         return True
-        return False
 
     def getPassword(email):
         db = Session()
@@ -207,15 +214,15 @@ class Persister():
 
     # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
-    def isScanned(eventId,personId):
+    def isScanned(eventId, personId):
         db = Session()
-        particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
-                                           .filter(Particepant.event_id == eventId)\
-                                           .first()
+        particepant = db.query(Particepant).filter(Particepant.person_id == personId) \
+            .filter(Particepant.event_id == eventId) \
+            .first()
         db.close()
         if particepant == None:
-            if(db.query(Event).filter(Event.id == eventId).count()):
-                if(db.query(Person).filter(Person.id == personId).count()):
+            if (db.query(Event).filter(Event.id == eventId).count()):
+                if (db.query(Person).filter(Person.id == personId).count()):
                     db = Session()
                     newParticepant = Particepant(
                         person_id=personId,
@@ -225,24 +232,44 @@ class Persister():
                     db.add(newParticepant)
                     db.commit()
                     db.close()
-                    particepant = db.query(Particepant).filter(Particepant.person_id == personId)\
-                                           .filter(Particepant.event_id == eventId)\
-                                           .first()
+                    particepant = db.query(Particepant).filter(Particepant.person_id == personId) \
+                        .filter(Particepant.event_id == eventId) \
+                        .first()
                     return particepant.event_scanned
         elif particepant.event_scanned:
             return 400
         return 200
 
     # Checks whether or not a particepant entry or beloging events and persons already exists
-    def checkParticepant(eventId, personId):
+    def checkParticepant(personId):
         db = Session()
-        if(db.query(Event).filter(Event.id == eventId).count()):
-                if(db.query(Person).filter(Person.id == personId).count()):
-                    if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
-                        db.close()
-                        return True
+        if (db.query(Person).filter(Person.id == personId).count()):
+            particepants = db.query(Particepant).filter(Particepant.person_id == personId).all()
+            events = []
+            for part in particepants:
+                eventEntry = {}
+                eventEntry['id'] = part.event_id
+                events.append(eventEntry)
+            db.close()
+            return events
         db.close()
-        return False
+        return []
+
+    def getParticepant(eventId, personId):
+        db = Session()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(
+            Particepant.event_id == eventId).first()
+        db.close()
+        return participant
+
+    def getAllParticepants(eventId):
+        db = Session()
+        if db.query(Particepant).filter(Particepant.event_id == eventId).count():
+            participants = db.query(Particepant).filter(Particepant.event_id == eventId).all()
+            db.close()
+            return participants
+        else:
+            return {}
 
     def getParticepant(eventId, personId):
         db = Session()
@@ -253,9 +280,9 @@ class Persister():
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
         db = Session()
-        particepant = db.query(Particepant).filter(Particepant.person_id == person_id)\
-                                           .filter(Particepant.event_id == event_id)\
-                                           .first()
+        particepant = db.query(Particepant).filter(Particepant.person_id == person_id) \
+            .filter(Particepant.event_id == event_id) \
+            .first()
 
         person = db.query(Person).filter(Person.id == person_id).first()
         person.points = person.points + 1
@@ -284,32 +311,31 @@ class Persister():
         db.close()
         return False
 
-
     def searchNews(searchString):
-        db=Session()
-        #define month numbers to translate user searchString if it contains months
+        db = Session()
+        # define month numbers to translate user searchString if it contains months
         months = {
-            "january" : '1',
-            "february" : '2',
-            "maart" : '3',
-            "april" : '4',
-            "mei" : '5',
-            "juni" : '6',
-            "juli" : '7',
-            "augustus" : '8',
-            "september" : '9',
-            "oktober" : '10',
-            "november" : '11',
-            "december" : '12'
+            "january": '1',
+            "february": '2',
+            "maart": '3',
+            "april": '4',
+            "mei": '5',
+            "juni": '6',
+            "juli": '7',
+            "augustus": '8',
+            "september": '9',
+            "oktober": '10',
+            "november": '11',
+            "december": '12'
         }
         returnData = {}
         newsByName = {}
         newsByDate = {}
 
-        #Convert the user query to a date query
+        # Convert the user query to a date query
         for month in months:
             if month in searchString.lower():
-                #searchString is a date query
+                # searchString is a date query
                 monthNumber = months[month]
                 if any(char.isdigit() for char in searchString):
                     numbers = re.findall(r'\d+', searchString)
@@ -324,12 +350,11 @@ class Persister():
                 else:
                     newsByDate = db.query(Content).filter(extract('month', Content.created) == monthNumber).all()
 
-        #get all the news items whose title contain the search string
+        # get all the news items whose title contain the search string
         newsName = db.query(Content).filter(Content.title.contains(searchString)).all()
 
         for news in newsByDate:
             if news.id not in returnData:
-                print(news.title)
                 newsEntry = {}
                 newsEntry['id'] = news.id
                 newsEntry['title'] = news.title
@@ -339,7 +364,7 @@ class Persister():
 
                 returnData[news.id] = newsEntry
 
-        #loop through all the news items whose title contain the search string and add them to the returnData if it isn't already there
+        # loop through all the news items whose title contain the search string and add them to the returnData if it isn't already there
         for news in newsName:
             if news.id not in returnData:
                 newsEntry = {}
@@ -354,44 +379,43 @@ class Persister():
         db.close()
         return returnData
 
-
     def searchEvent(searchString):
-        db=Session()
-        #define month numbers to translate user searchString if it contains months
+        db = Session()
+        # define month numbers to translate user searchString if it contains months
         months = {
-            "january" : '1',
-            "february" : '2',
-            "maart" : '3',
-            "april" : '4',
-            "mei" : '5',
-            "juni" : '6',
-            "juli" : '7',
-            "augustus" : '8',
-            "september" : '9',
-            "oktober" : '10',
-            "november" : '11',
-            "december" : '12'
+            "january": '1',
+            "february": '2',
+            "maart": '3',
+            "april": '4',
+            "mei": '5',
+            "juni": '6',
+            "juli": '7',
+            "augustus": '8',
+            "september": '9',
+            "oktober": '10',
+            "november": '11',
+            "december": '12'
         }
 
-        #declare all dicts: to be filled by query results later
+        # declare all dicts: to be filled by query results later
         returnData = {}
         leaders = {}
         eventsByLeader = {}
         eventsByBegin = {}
         eventsByEnd = {}
         print(searchString)
-        #query the db on event names containging the search string
+        # query the db on event names containging the search string
         eventsName = db.query(Event).filter(Event.name.contains(searchString)).all()
         eventsLocation = db.query(Event).filter(Event.location.contains(searchString)).all()
 
-        #query the db for persons whose first and/or last name contain the search string
+        # query the db for persons whose first and/or last name contain the search string
         personsFirstName = db.query(Person).filter(Person.firstname.contains(searchString)).all()
         personsLastName = db.query(Person).filter(Person.lastname.contains(searchString)).all()
 
-        #Convert the user query to a date query
+        # Convert the user query to a date query
         for month in months:
             if month in searchString.lower():
-                #searchString is a date query
+                # searchString is a date query
                 monthNumber = months[month]
                 if any(char.isdigit() for char in searchString):
                     numbers = re.findall(r'\d+', searchString)
@@ -407,9 +431,8 @@ class Persister():
                 else:
                     eventsByBegin = db.query(Event).filter(extract('month', Event.begin) == monthNumber).all()
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
-            
-        for event in eventsByBegin:
 
+        for event in eventsByBegin:
             if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
@@ -425,7 +448,6 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-
 
                 returnData[event.id] = eventEntry
 
@@ -448,17 +470,17 @@ class Persister():
 
                 returnData[event.id] = eventEntry
 
-        #loop through query result and add the person to the leaders dict if it isn't there already
+        # loop through query result and add the person to the leaders dict if it isn't there already
         for person in personsFirstName:
             if person.id not in leaders:
                 leaders[person.id] = person
 
-        #loop through query result and add the person to the leaders dict if it isn't there already
+        # loop through query result and add the person to the leaders dict if it isn't there already
         for person in personsLastName:
             if person.id not in leaders:
                 leaders[person.id] = person
 
-        #loop through leaders dict and if it exists get all events that that person leads, if it isn't already in the returnData dict it adds the event
+        # loop through leaders dict and if it exists get all events that that person leads, if it isn't already in the returnData dict it adds the event
         for personId in leaders:
             person = leaders[personId]
             if db.query(Event).filter(Event.leader == person.wordpressKey).count():
@@ -479,11 +501,10 @@ class Persister():
                         eventEntry['qr_code'] = event.qr_code
                         eventEntry['created'] = event.created
                         eventEntry['link'] = event.link
-    
 
                         returnData[event.id] = eventEntry
 
-        #loop through eventsName dict and if it isn't already in the returnData dict it adds the event
+        # loop through eventsName dict and if it isn't already in the returnData dict it adds the event
         for event in eventsName:
             eventEntry = {}
 
@@ -501,7 +522,6 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
 
                 returnData[event.id] = eventEntry
 
@@ -521,7 +541,7 @@ class Persister():
                 eventEntry['qr_code'] = event.qr_code
                 eventEntry['created'] = event.created
                 eventEntry['link'] = event.link
-    
+
                 returnData[event.id] = eventEntry
         db.close()
         return returnData
@@ -544,7 +564,6 @@ class Persister():
                 return 400
             else:
                 person.password = newPassword
-    
                 db.commit()
                 db.close()
                 return 200
@@ -584,7 +603,6 @@ class Persister():
     def addPoints(id):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-
         person.points = person.points + 1
         db.commit()
         db.close()
@@ -609,13 +627,14 @@ class Persister():
         person = db.query(Person).filter(Person.id == id).first()
 
         if person.points >= 15:
-            person.points = 0
+            person.points -= 15
 
             db.commit()
             db.close()
             return 200
+        return 400
 
-    def saveMedia(url,eventName):
+    def saveMedia(url, eventName):
         db = Session()
 
         if db.query(Event).filter(Event.name == eventName).count():
@@ -623,7 +642,7 @@ class Persister():
 
             newMedia = Media(
                 event_id=eventId,
-                url = url
+                url=url
 
             )
 
@@ -634,7 +653,7 @@ class Persister():
         else:
             return 400
 
-    def addProfilePhoto(url,id):
+    def addProfilePhoto(url, id):
         db = Session()
 
         if db.query(Person).filter(Person.id == id).count():
@@ -669,8 +688,24 @@ class Persister():
             lName = db.query(Person.lastname).filter(Person.wordpressKey == id).first()
 
             db.close()
-            return checks.fixName(fName,lName)
+            return checks.fixName(fName, lName)
 
+    def getEventById(eventId):
+        db = Session()
+        if db.query(Event).filter(Event.id == eventId).count():
+            event = db.query(Event).filter(Event.id == eventId).first()
+            db.close()
+            return event
+        else:
+            return 400
+
+    def getDescription(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            bio = db.query(Person.biography).filter(Person.wordpressKey == id).first()
+            db.close()
+            return bio
 
     def getAllEvents():
         db = Session()
@@ -682,7 +717,6 @@ class Persister():
         else:
             return 400
 
-
     def getAllAdmins():
         db = Session()
         if db.query(Person).filter(Person.clearance == 1).count():
@@ -692,6 +726,21 @@ class Persister():
         else:
             return {}
 
+    def getAllSubs(id):
+        db = Session()
+
+        if db.query(Particepant).filter(Particepant.person_id == id).count():
+            eventIds = db.query(Particepant.event_id).filter(Particepant.person_id == id).filter(
+                Particepant.event_scanned == 1).all()
+            db.close()
+            list = []
+            for id in eventIds:
+                list.append(id[0])
+            print("nieuwe ids zijn", list)
+            return list
+        else:
+            db.close()
+            return {}
 
     def getAllNewsItems():
         db = Session()
@@ -703,16 +752,16 @@ class Persister():
         else:
             return {}
         
-    def getAllSubs(id):
+    def getAllSubbedEvents(eventId):
         db = Session()
 
-        if db.query(Particepant).filter(Particepant.person_id == id).count():
-            eventIds = db.query(Particepant.event_id).filter(Particepant.person_id == id).all()
-            db.close()
-            return eventIds
-        else:
-            db.close()
-            return {}
+        results = []
+        for id in eventId:
+            event = db.query(Event).filter(Event.id == id).all()
+            results.append(event)
+        db.close()
+        print("dit zijn de evenementen", results)
+        return results
 
 
     def getEventName(item):
@@ -723,3 +772,4 @@ class Persister():
         return eventNames
 
 Base.metadata.create_all(conn)
+
