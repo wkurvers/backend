@@ -4,6 +4,19 @@ import datetime
 def getPerson(person_id):
     return Persister.getPerson(person_id)
 
+
+
+def getUsers():
+    users = Persister.getPersons()
+    if users != 400:
+        result = []
+        for user in users:
+            name = user.firstname + " " + user.lastname
+            result.append({"id": user.id, "name": name, "email": user.email})
+
+    return result
+
+
 def getUserByEmail(emailLogin):
     return Persister.getUserWithEmail(emailLogin)
 
@@ -75,4 +88,3 @@ def createNewsItem(title, content, img):
         created=datetime.datetime.now()
     )
     return Persister.persist_object(item)
-

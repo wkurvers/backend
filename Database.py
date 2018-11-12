@@ -12,8 +12,6 @@ import random, string
 import hashlib
 import datetime
 
-
-
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
@@ -53,6 +51,7 @@ class Event(Base):
     created = sqla.Column('created', sqla.DATETIME)
     link = sqla.Column('link', sqla.VARCHAR(400))
 
+
 class Content(Base):
     __tablename__ = 'content'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
@@ -74,6 +73,7 @@ class Media(Base):
     __tablename__ = 'media'
     event_id = sqla.Column('event_id', sqla.Integer, sqla.ForeignKey('event.id'), primary_key=True)
     url = sqla.Column('url', sqla.VARCHAR(400))
+
 
 class Persister():
     def getPerson(id):
@@ -133,7 +133,7 @@ class Persister():
 
     def remove_event(id):
         db = Session()
-        try:            
+        try:
             particepant = db.query(Particepant).filter(Particepant.event_id == id).first()
             print(particepant)
             if particepant != None:
@@ -147,7 +147,7 @@ class Persister():
             return 400
         db.close()
         return 200
-    
+
     def persist_object(obj):
         db = Session()
         try:
@@ -159,11 +159,11 @@ class Persister():
         db.close()
         return 200
 
-    def update_object(id,name,begin,end,location,description,leader,img, qr_code):
+    def update_object(id, name, begin, end, location, description, leader, img, qr_code):
         db = Session()
         try:
             event = db.query(Event).filter(Event.id == id).first()
-            if(event == None):
+            if (event == None):
                 obj = Event(
                     id=id,
                     name=name,
@@ -175,21 +175,21 @@ class Persister():
                     cancel=0,
                     img=img,
                     qr_code=qr_code,
-                    created= datetime.datetime.now(),
-                    link= None
+                    created=datetime.datetime.now(),
+                    link=None
                 )
                 db.add(obj)
                 db.commit()
             else:
-                event.name=name
-                event.begin=begin
-                event.end=begin
-                event.desc=description
-                event.leader=leader
-                event.cancel=0
-                event.img=img
-                event.qr_code=qr_code
-                event.link= ''
+                event.name = name
+                event.begin = begin
+                event.end = begin
+                event.desc = description
+                event.leader = leader
+                event.cancel = 0
+                event.img = img
+                event.qr_code = qr_code
+                event.link = ''
                 db.commit()
         except:
             db.close()
@@ -197,7 +197,7 @@ class Persister():
             return 400
         db.close()
         return 200
-    
+
     def remove_object(obj):
         db = Session()
         print("hallo");
@@ -210,9 +210,10 @@ class Persister():
             db.close()
             return 400
         db.close()
-        return 200 
+        return 200
 
-    # Check if QR code is already scanned
+        # Check if QR code is already scanned
+
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId, personId):
         db = Session()
@@ -243,14 +244,14 @@ class Persister():
     # Checks whether or not a particepant entry or beloging events and persons already exists
     def checkParticepant(eventId, personId):
         db = Session()
-        if(db.query(Event).filter(Event.id == eventId).count()):
-                if(db.query(Person).filter(Person.id == personId).count()):
-                    if(db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).count()):
-                        db.close()
-                        return True
+        if (db.query(Event).filter(Event.id == eventId).count()):
+            if (db.query(Person).filter(Person.id == personId).count()):
+                if (db.query(Particepant).filter(Particepant.person_id == personId).filter(
+                        Particepant.event_id == eventId).count()):
+                    db.close()
+                    return True
         db.close()
         return False
-
 
     def getSubsForPerson(personId):
         db = Session()
@@ -265,7 +266,6 @@ class Persister():
             return events
         db.close()
         return []
-
 
     def getParticepant(eventId, personId):
         db = Session()
@@ -285,7 +285,8 @@ class Persister():
 
     def getParticepant(eventId, personId):
         db = Session()
-        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(
+            Particepant.event_id == eventId).first()
         db.close()
         return participant
 
@@ -763,7 +764,7 @@ class Persister():
             return news
         else:
             return {}
-        
+
     def getAllSubbedEvents(eventId):
         db = Session()
 
@@ -775,6 +776,15 @@ class Persister():
         print("dit zijn de evenementen", results)
         return results
 
+    def getPersons():
+        db = Session()
+        if db.query(Person).count():
+            users = db.query(Person).all()
+            db.close()
+            return users
+        else:
+            db.close()
+            return {}
 
     def getEventName(item):
         db = Session()
@@ -783,5 +793,5 @@ class Persister():
         db.close()
         return eventNames
 
-Base.metadata.create_all(conn)
 
+Base.metadata.create_all(conn)
