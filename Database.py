@@ -180,16 +180,19 @@ class Persister():
         return 200
 
     # Checks whether or not a particepant entry or beloging events and persons already exists
-    def checkParticepant(eventId, personId):
+    def checkParticepant(personId):
         db = Session()
-        if (db.query(Event).filter(Event.id == eventId).count()):
-            if (db.query(Person).filter(Person.id == personId).count()):
-                if (db.query(Particepant).filter(Particepant.person_id == personId).filter(
-                        Particepant.event_id == eventId).count()):
-                    db.close()
-                    return True
+        if (db.query(Person).filter(Person.id == personId).count()):
+            particepants = db.query(Particepant).filter(Particepant.person_id == personId).all()
+            events = []
+            for part in particepants:
+                eventEntry = {}
+                eventEntry['id'] = part.event_id
+                events.append(eventEntry)
+            db.close()
+            return events
         db.close()
-        return False
+        return []
 
     def getParticepant(eventId, personId):
         db = Session()
@@ -535,7 +538,6 @@ class Persister():
     def addPoints(id):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-
         person.points = person.points + 1
         db.commit()
         db.close()
@@ -565,6 +567,7 @@ class Persister():
             db.commit()
             db.close()
             return 200
+        return 400
 
     def saveMedia(url, eventName):
         db = Session()

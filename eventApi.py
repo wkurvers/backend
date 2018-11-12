@@ -78,8 +78,8 @@ def subToEvent(eventId, personId):
              "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
 
 
-def findSub(eventId, personId):
-    return ({"found": Persister.checkParticepant(eventId, personId)})
+def checkSubs(personId):
+    return ({"subEvents": Persister.checkParticepant(personId)})
 
 
 def unSubToEvent(eventId, personId):
@@ -117,11 +117,24 @@ def searchEvent(searchString):
         endDay = end.strftime('%d')
         endMonth = end.strftime('%b')
         endTime = end.strftime('%H:%M')
+
+        participantList = []
+        participants = Persister.getAllParticepants(event.id)
+        if participants != 400:
+            for participant in participants:
+                person = Persister.getPerson(participant.person_id)
+                name = person.firstname + " " + person.lastname
+                participantInfo = {
+                        "id": person.id,
+                        "name": name,
+                        "points": person.points
+                    }
+                participantList.append(participantInfo)
         result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth],
                        "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                        "location": event['location'], "desc": event['desc'], "leader": leader,
                        "cancel": event['cancel'], "img": event['img'], "qrCode": event['qr_code'],
-                       "created": created, "link": event['link'], "photo": photo, "subscribed": None});
+                       "created": created, "link": event['link'], "photo": photo, "subscribed": None, "participants": participantList});
 
     return result
 
@@ -177,7 +190,6 @@ def getAllEvents():
                            "img": event.img, "qrCode": event.qr_code,
                            "created": created, "link": event.link, "photo": photo, "subscribed": None,
                            "participants": participantList})
-
     return result
 
 

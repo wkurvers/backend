@@ -231,7 +231,6 @@ def resetStampCard():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.resetStampCard(data.get('id'))})
 
-
 @app.route('/api/getParticipants', methods=['POST'])
 def getParticipants():
     data = request.get_json()
@@ -273,7 +272,7 @@ def unSubToEvent():
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
-    return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
+    return jsonify(eventApi.checkSubs(data.get("personId")))
 
 
 @app.route('/api/saveMedia', methods=['POST'])
