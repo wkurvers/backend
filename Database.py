@@ -10,6 +10,8 @@ import checks
 import re
 import random, string
 import hashlib
+import datetime
+
 
 
 conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
@@ -73,7 +75,6 @@ class Media(Base):
     event_id = sqla.Column('event_id', sqla.Integer, sqla.ForeignKey('event.id'), primary_key=True)
     url = sqla.Column('url', sqla.VARCHAR(400))
 
-
 class Persister():
     def getPerson(id):
         db = Session()
@@ -130,6 +131,23 @@ class Persister():
         db.close()
         return user
 
+    def remove_event(id):
+        db = Session()
+        try:            
+            particepant = db.query(Particepant).filter(Particepant.event_id == id).first()
+            print(particepant)
+            if particepant != None:
+                db.delete(particepant)
+                db.commit()
+            event = db.query(Event).filter(Event.id == id).first()
+            db.delete(event)
+            db.commit()
+        except:
+            db.close()
+            return 400
+        db.close()
+        return 200
+    
     def persist_object(obj):
         db = Session()
         try:
@@ -141,17 +159,60 @@ class Persister():
         db.close()
         return 200
 
-    def remove_object(obj):
+    def update_object(id,name,begin,end,location,description,leader,img, qr_code):
         db = Session()
         try:
+            event = db.query(Event).filter(Event.id == id).first()
+            if(event == None):
+                obj = Event(
+                    id=id,
+                    name=name,
+                    begin=begin,
+                    end=end,
+                    location=location,
+                    desc=description,
+                    leader=leader,
+                    cancel=0,
+                    img=img,
+                    qr_code=qr_code,
+                    created= datetime.datetime.now(),
+                    link= None
+                )
+                db.add(obj)
+                db.commit()
+            else:
+                event.name=name
+                event.begin=begin
+                event.end=begin
+                event.desc=description
+                event.leader=leader
+                event.cancel=0
+                event.img=img
+                event.qr_code=qr_code
+                event.link= ''
+                db.commit()
+        except:
+            db.close()
+            print("OH NO")
+            return 400
+        db.close()
+        return 200
+    
+    def remove_object(obj):
+        db = Session()
+        print("hallo");
+        try:
+            print("trying to delete");
             db.delete(obj)
             db.commit()
+            print("deleted");
         except:
             db.close()
             return 400
         db.close()
-        return 200
+        return 200 
 
+    # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId, personId):
         db = Session()
@@ -180,16 +241,19 @@ class Persister():
         return 200
 
     # Checks whether or not a particepant entry or beloging events and persons already exists
-    def checkParticepant(eventId, personId):
+    def checkParticepant(personId):
         db = Session()
-        if (db.query(Event).filter(Event.id == eventId).count()):
-            if (db.query(Person).filter(Person.id == personId).count()):
-                if (db.query(Particepant).filter(Particepant.person_id == personId).filter(
-                        Particepant.event_id == eventId).count()):
-                    db.close()
-                    return True
+        if (db.query(Person).filter(Person.id == personId).count()):
+            particepants = db.query(Particepant).filter(Particepant.person_id == personId).all()
+            events = []
+            for part in particepants:
+                eventEntry = {}
+                eventEntry['id'] = part.event_id
+                events.append(eventEntry)
+            db.close()
+            return events
         db.close()
-        return False
+        return []
 
     def getParticepant(eventId, personId):
         db = Session()
@@ -206,6 +270,12 @@ class Persister():
             return participants
         else:
             return {}
+
+    def getParticepant(eventId, personId):
+        db = Session()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
+        db.close()
+        return participant
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
@@ -363,7 +433,6 @@ class Persister():
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
 
         for event in eventsByBegin:
-
             if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
@@ -495,7 +564,6 @@ class Persister():
                 return 400
             else:
                 person.password = newPassword
-
                 db.commit()
                 db.close()
                 return 200
@@ -535,7 +603,6 @@ class Persister():
     def addPoints(id):
         db = Session()
         person = db.query(Person).filter(Person.id == id).first()
-
         person.points = person.points + 1
         db.commit()
         db.close()
@@ -565,6 +632,7 @@ class Persister():
             db.commit()
             db.close()
             return 200
+        return 400
 
     def saveMedia(url, eventName):
         db = Session()
@@ -658,17 +726,6 @@ class Persister():
         else:
             return {}
 
-    def getAllNewsItems():
-        db = Session()
-
-        if db.query(Content).count():
-            news = db.query(Content).order_by(Content.created).all()
-            db.close()
-            return news
-        else:
-            db.close()
-            return {}
-
     def getAllSubs(id):
         db = Session()
 
@@ -685,6 +742,16 @@ class Persister():
             db.close()
             return {}
 
+    def getAllNewsItems():
+        db = Session()
+
+        if db.query(Content).count():
+            news = db.query(Content).order_by(Content.created).all()
+            db.close()
+            return news
+        else:
+            return {}
+        
     def getAllSubbedEvents(eventId):
         db = Session()
 
@@ -697,4 +764,12 @@ class Persister():
         return results
 
 
+    def getEventName(item):
+        db = Session()
+
+        eventNames = db.query(Event.name).filter(Event.id == item).all()
+        db.close()
+        return eventNames
+
 Base.metadata.create_all(conn)
+

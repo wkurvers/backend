@@ -32,11 +32,17 @@ def load_user(person_id):
 def route(path):
     return render_template('index.html')
 
+@app.route('/api/deleteEventTrigger', methods=['GET'])
+def deleteEventTrigger():
+    id = request.args.get("id")
+    return jsonify({"responseCode": eventApi.deleteEvent(id)})
 
-#sends the event to the wordpress website and sends a notification to the app
+
 @app.route('/api/createEventTrigger', methods=['GET'])
 def createEventTrigger():
-    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/" + request.args.get("id")).json()
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    print(data)
+    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
     soup = BSHTML(data["content"]["rendered"])
     images = soup.findAll('img')
     img = " "
@@ -51,17 +57,46 @@ def createEventTrigger():
                "included_segments": ["All"],
                "contents": {"en": "Nieuw evenement van Bslim!"},
                "headings": {"en": data['title']['rendered']}}
-
-    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    print("YAY")
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
     print(data["author"])
-    return jsonify({"responseCode": eventApi.createEvent(data["title"]["rendered"],
+    return jsonify({"responseCode": eventApi.createEvent(request.args.get("id"),
+                                                         data["title"]["rendered"],
                                                          data["start"],
                                                          data["end"],
-                                                         'Peizerweg 48',
+                                                         address['name'],
                                                          data["content"]["rendered"],
                                                          data["author"],
                                                          img)})
 
+@app.route('/api/updateEventTrigger', methods=['GET'])
+def updateEventTrigger():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/events/"+request.args.get("id")).json()
+    print(data)
+    address = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/event-venues/" + str(data['event-venues'][0])).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                  "Authorization": "Basic " + apiKey}
+
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuw evenement van Bslim!"},
+               "headings": {"en": data["title"]["rendered"]}}
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    return jsonify({"responseCode": eventApi.updateEvent(request.args.get("id"),
+                                                         data["title"]["rendered"],
+                                                         data["start"],
+                                                         data["end"],
+                                                         address['name'],
+                                                         data["content"]["rendered"],
+                                                         data["author"],
+                                                         img)})
 
 ################################################################
 # login/logout
@@ -154,6 +189,66 @@ def changeUserEmail():
         return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
     return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
+@app.route('/changeEmailRequest', methods=['POST'])
+def changeMail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    if UserApi.getEmail(oldEmail) == None:
+        return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
+    user = UserApi.getUserByEmail(oldEmail)
+    if UserApi.changeEmail(user.id) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(oldEmail)
+        message = "Om je e-mail adres te veranderen is er een veiligheids code gegenereerd: " + user.securityCode + ". Vul deze code in de app in en voer u nieuwe e-mail adres in."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = oldEmail
+        msg['Subject'] = "E-mail veranderen"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', oldEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Security code generated for ' + oldEmail, 'oldEmail': oldEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not generate security code'})
+
+@app.route('/changeUserEmail', methods=['POST'])
+def changeUserEmail():
+    data = request.get_json()
+    oldEmail = data.get('oldEmail')
+    newEmail = data.get('newEmail')
+    secCode = data.get('secCode')
+    if not UserApi.checkSecCode(oldEmail,secCode):
+        return jsonify({'responseCode': 400, 'msg': "Veiligheidscode is ongeldig."})
+    if UserApi.changeUserEmail(oldEmail, newEmail) == 200:
+        msg = MIMEMultipart()
+
+        user = UserApi.getUserByEmail(newEmail)
+        message = "Uw e-mail adres is succesvol verandert."
+
+        # setup the parameters of the message
+        msg['From'] = "bslim@grombouts.nl"
+        msg['To'] = newEmail
+        msg['Subject'] = "E-mail adres verandert"
+
+        # add in the message body
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Send the message via our own SMTP server.
+        server = smtplib.SMTP('mail.grombouts.nl', 587)
+        server.starttls()
+        server.login('bslim@grombouts.nl', "bslim")
+        server.sendmail('bslim@grombouts.nl', newEmail, msg.as_string())
+        server.quit()
+        return jsonify({'responseCode': 200, 'msg': 'Succesfuly changed e-mail address to ' + newEmail})
+    return jsonify({'responseCode': 500, 'msg': 'Could not change e-mail address'})
 
 #generates a new password and sends it to the user via email
 @app.route('/reset-password', methods=['POST'])
@@ -231,7 +326,6 @@ def resetStampCard():
     data = request.get_json()
     return jsonify({"responseCode": UserApi.resetStampCard(data.get('id'))})
 
-
 @app.route('/api/getParticipants', methods=['POST'])
 def getParticipants():
     data = request.get_json()
@@ -263,6 +357,7 @@ def subToEvent():
     data = request.get_json()
     return jsonify(eventApi.subToEvent(data.get("eventId"), data.get("personId")))
 
+
 #removes a participent entry from the db with a specific event and user
 @app.route('/api/unSubToEvent', methods=['POST'])
 def unSubToEvent():
@@ -273,7 +368,7 @@ def unSubToEvent():
 @app.route('/api/checkSub', methods=['POST'])
 def checkSub():
     data = request.get_json()
-    return jsonify(eventApi.findSub(data.get("eventId"), data.get("personId")))
+    return jsonify(eventApi.checkSubs(data.get("personId")))
 
 
 @app.route('/api/saveMedia', methods=['POST'])
@@ -306,15 +401,31 @@ def createNewsItem():
     header = {"Content-Type": "application/json; charset=utf-8",
               "Authorization": "Basic " + apiKey}
 
+@app.route('/api/createNewsItem', methods=['GET'])
+def createNewsItem():
+    data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/"+request.args.get("id")).json()
+    soup = BSHTML(data["content"]["rendered"])
+    images = soup.findAll('img')
+    img = " "
+    for image in images:
+        img = image['src']
+
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+                "Authorization": "Basic " + apiKey}
+
     payload = {"app_id": appId,
                "included_segments": ["All"],
                "contents": {"en": "Nieuws van bslim"},
                "headings": {"en": data.get('title')}}
 
-    req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
-    return jsonify({"responseCode": UserApi.createNewsItem(data.get('title'),
-                                                           data.get('content'),
-                                                           data.get('img'))})
+    #req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    return jsonify({"responseCode": UserApi.createNewsItem(data["title"]["rendered"],
+                                                         data["content"]["rendered"],
+                                                         img)})
+
+
 
 #searches through all the news items in the db on title and created date
 @app.route('/api/searchNews', methods=['POST'])
@@ -324,8 +435,6 @@ def searchNews():
     if len(result) > 0:
         return jsonify({"responseCode": 200, "news": result})
     return jsonify({"responseCode": 400, "news": {}})
-
-
 ################################################################
 # mentor
 ################################################################
@@ -420,6 +529,22 @@ def getAllSubs():
         return jsonify({"responseCode": 200, "subs": result})
     return jsonify({"responseCode": 400, "subs": {}})
 
+@app.route('/api/getAllAdmins', methods=['POST'])
+def getAdmins():
+    result = UserApi.getAllAdmins()
+    print(result)
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "admins": result})
+    return jsonify({"responseCode": 400, "admins": {}})
+
+
+@app.route('/api/getAllNewsItems', methods=['GET'])
+def getNews():
+    result =  eventApi.getAllNewsItems()
+    if len(result) > 0:
+        return jsonify({"responseCode": 200, "news": result})
+    return jsonify({"responseCode": 400, "news": {} })
+
 @app.route('/api/sendFeedbackForm', methods=['POST'])
 def sendFeedbackForm():
     data = request.get_json()
@@ -452,5 +577,7 @@ def sendFeedbackForm():
         return jsonify({'responseCode': 400, 'msg': "Email is not recognized"})
 
 
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
+

@@ -18,6 +18,18 @@ months = {'Jan': 'Jan',
           'Nov': 'Nov',
           'Dec': 'Dec'};
 
+months = {'Jan': 'Jan', 
+		  'Feb': 'Feb', 
+		  'Mar': 'Mrt', 
+		  'Apr': 'Apr', 
+		  'May': 'Mei', 
+		  'Jun': 'Jun', 
+		  'Jul': 'Jul', 
+		  'Aug': 'Aug', 
+		  'Sep': 'Sep', 
+		  'Oct': 'Okt', 
+		  'Nov': 'Nov', 
+		  'Dec': 'Dec'};
 
 # returns 200 to indicate successful updating of the particepant info
 def eventScanned(event_id, person_id):
@@ -31,37 +43,69 @@ def isScanned(eventId, person_id):
 
 # returns
 def findEvent(qrCode):
-    return Persister.findEvent(qrCode)
+	return Persister.findEvent(qrCode)
+
+def deleteEvent(id):
+	return Persister.remove_event(id)
+
+def createEvent(id,name,begin,end,location,description,leader,img):
+	print("HOI") 
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(id == '' or
+       name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		print(400)
+		return 400
+	event = Event(
+            id=id,
+			name=name,
+			begin=begin,
+			end=end,
+			location=location,
+			desc=description,
+			leader=leader,
+			cancel=0,
+			img=img,
+			qr_code=qr_code,
+			created= datetime.datetime.now(),
+			link= None
+		)
+	print(event)
+	return Persister.persist_object(event)
 
 
-def createEvent(name, begin, end, location, description, leader, img):
-    size = 6
-    chars = string.ascii_uppercase + string.digits
-    unHashed = ''.join(random.choice(chars) for _ in range(size))
-    qr_code = pbkdf2_sha256.hash(unHashed)
-    if (name == '' or
-            begin == '' or
-            end == '' or
-            location == '' or
-            description == '' or
-            leader == '' or
-            img == ''):
-        return 400
-    event = Event(
-        name=name,
-        begin=begin,
-        end=end,
-        location=location,
-        desc=description,
-        leader=leader,
-        cancel=0,
-        img=img,
-        qr_code=qr_code,
-        created=datetime.datetime.now(),
-        link=None
-    )
-    return Persister.persist_object(event)
-
+def updateEvent(id,name,begin,end,location,description,leader,img):
+	print("HOI") 
+	size=6
+	chars=string.ascii_uppercase + string.digits
+	unHashed = ''.join(random.choice(chars) for _ in range(size))
+	qr_code = pbkdf2_sha256.hash(unHashed)
+	if(id == '' or
+       name == '' or
+	   begin == '' or
+	   end == '' or
+	   location == '' or
+	   description == '' or
+	   leader== '' or
+	   img==''):
+		return 400
+	print("id " + str(id))
+	print("name " + name)
+	print("begin " + begin)
+	print("end " + end)
+	print("description " + description)
+	print("leader " + str(leader))
+	print("img " + img)
+	print(id)
+	return Persister.update_object(id,name,begin,end,location,description,leader,img, qr_code)
 
 def subToEvent(eventId, personId):
     if not Persister.checkParticepant(eventId, personId):
@@ -78,8 +122,8 @@ def subToEvent(eventId, personId):
              "msg": "Could not add participant entry because either some of the given data did not match or the entry already exists."})
 
 
-def findSub(eventId, personId):
-    return ({"found": Persister.checkParticepant(eventId, personId)})
+def checkSubs(personId):
+    return ({"subEvents": Persister.checkParticepant(personId)})
 
 
 def unSubToEvent(eventId, personId):
@@ -117,11 +161,24 @@ def searchEvent(searchString):
         endDay = end.strftime('%d')
         endMonth = end.strftime('%b')
         endTime = end.strftime('%H:%M')
+
+        participantList = []
+        participants = Persister.getAllParticepants(event.id)
+        if participants != 400:
+            for participant in participants:
+                person = Persister.getPerson(participant.person_id)
+                name = person.firstname + " " + person.lastname
+                participantInfo = {
+                        "id": person.id,
+                        "name": name,
+                        "points": person.points
+                    }
+                participantList.append(participantInfo)
         result.append({"id": event['id'], "name": event['name'], "begin": beginDay, "beginMonth": months[beginMonth],
                        "end": endDay, "endMonth": months[endMonth], "endTime": endTime,
                        "location": event['location'], "desc": event['desc'], "leader": leader,
                        "cancel": event['cancel'], "img": event['img'], "qrCode": event['qr_code'],
-                       "created": created, "link": event['link'], "photo": photo, "subscribed": None});
+                       "created": created, "link": event['link'], "photo": photo, "subscribed": None, "participants": participantList});
 
     return result
 
@@ -178,7 +235,6 @@ def getAllEvents():
                            "img": event.img, "qrCode": event.qr_code,
                            "created": created,"leaderDesc": bio, "link": event.link, "photo": photo, "subscribed": None,
                            "participants": participantList})
-
     return result
 
 
@@ -253,12 +309,12 @@ def getAllSubs(id):
                         }
                         participantList.append(participantInfo)
 
-                    result.append({"id": e.id, "name": e.name, "begin": beginDay, "beginMonth": months[beginMonth],
-                                   "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth],
-                                   "endTime": endTime,
-                                   "location": e.location, "desc": e.desc, "leader": leader, "cancel": e.cancel,
-                                   "img": e.img, "qrCode": e.qr_code,
-                                   "created": created, "link": e.link, "photo": photo, "subscribed": None,
-                                   "participants": participantList})
+                        result.append({"id": e.id, "name": e.name, "begin": beginDay, "beginMonth": months[beginMonth],
+                                       "beginTime": beginTime, "end": endDay, "endMonth": months[endMonth],
+                                       "endTime": endTime,
+                                       "location": e.location, "desc": e.desc, "leader": leader, "cancel": e.cancel,
+                                       "img": e.img, "qrCode": e.qr_code,
+                                       "created": created, "link": e.link, "photo": photo, "subscribed": None,
+                                       "participants": participantList})
+     return result
 
-    return result
