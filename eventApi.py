@@ -5,18 +5,6 @@ from flask import jsonify
 import datetime
 from operator import itemgetter
 
-months = {'Jan': 'Jan',
-		  'Feb': 'Feb',
-		  'Mar': 'Mrt',
-		  'Apr': 'Apr',
-		  'May': 'Mei',
-		  'Jun': 'Jun',
-		  'Jul': 'Jul',
-		  'Aug': 'Aug',
-		  'Sep': 'Sep',
-		  'Oct': 'Okt',
-		  'Nov': 'Nov',
-		  'Dec': 'Dec'};
 
 months = {'Jan': 'Jan', 
 		  'Feb': 'Feb', 

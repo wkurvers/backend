@@ -13,6 +13,8 @@ def getEmail(emailLogin):
 def getPassword(email):
     return Persister.getPassword(email)
 
+def checkEmailExistance(email):
+    return Persister.checkEmailExistance(email)
 
 def saveNewPassword(temp,email):
     if Persister.checkEmailExistance(email):
@@ -73,5 +75,4 @@ def createNewsItem(title, content, img):
         created=datetime.datetime.now()
     )
     return Persister.persist_object(item)
-
 
