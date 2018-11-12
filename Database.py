@@ -14,7 +14,7 @@ import datetime
 
 
 
-conn = sqla.create_engine('mysql+pymysql://bslim:bslim_hanze!@localhost/bslim?charset=utf8')
+conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
