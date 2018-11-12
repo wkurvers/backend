@@ -10,8 +10,11 @@ import checks
 import re
 import random, string
 import hashlib
+import datetime
 
-conn = sqla.create_engine('mysql+pymysql://root:@localhost/bslim?charset=utf8')
+
+
+conn = sqla.create_engine('mysql+pymysql://bslim:bslim_hanze!@localhost/bslim?charset=utf8')
 
 Session = scoped_session(sessionmaker(bind=conn))
 
@@ -50,7 +53,6 @@ class Event(Base):
     created = sqla.Column('created', sqla.DATETIME)
     link = sqla.Column('link', sqla.VARCHAR(400))
 
-
 class Content(Base):
     __tablename__ = 'content'
     id = sqla.Column('id', sqla.Integer, primary_key=True, autoincrement=True, unique=True)
@@ -72,7 +74,6 @@ class Media(Base):
     __tablename__ = 'media'
     event_id = sqla.Column('event_id', sqla.Integer, sqla.ForeignKey('event.id'), primary_key=True)
     url = sqla.Column('url', sqla.VARCHAR(400))
-
 
 class Persister():
     def getPerson(id):
@@ -130,6 +131,23 @@ class Persister():
         db.close()
         return user
 
+    def remove_event(id):
+        db = Session()
+        try:            
+            particepant = db.query(Particepant).filter(Particepant.event_id == id).first()
+            print(particepant)
+            if particepant != None:
+                db.delete(particepant)
+                db.commit()
+            event = db.query(Event).filter(Event.id == id).first()
+            db.delete(event)
+            db.commit()
+        except:
+            db.close()
+            return 400
+        db.close()
+        return 200
+    
     def persist_object(obj):
         db = Session()
         try:
@@ -141,17 +159,60 @@ class Persister():
         db.close()
         return 200
 
-    def remove_object(obj):
+    def update_object(id,name,begin,end,location,description,leader,img, qr_code):
         db = Session()
         try:
+            event = db.query(Event).filter(Event.id == id).first()
+            if(event == None):
+                obj = Event(
+                    id=id,
+                    name=name,
+                    begin=begin,
+                    end=end,
+                    location=location,
+                    desc=description,
+                    leader=leader,
+                    cancel=0,
+                    img=img,
+                    qr_code=qr_code,
+                    created= datetime.datetime.now(),
+                    link= None
+                )
+                db.add(obj)
+                db.commit()
+            else:
+                event.name=name
+                event.begin=begin
+                event.end=begin
+                event.desc=description
+                event.leader=leader
+                event.cancel=0
+                event.img=img
+                event.qr_code=qr_code
+                event.link= ''
+                db.commit()
+        except:
+            db.close()
+            print("OH NO")
+            return 400
+        db.close()
+        return 200
+    
+    def remove_object(obj):
+        db = Session()
+        print("hallo");
+        try:
+            print("trying to delete");
             db.delete(obj)
             db.commit()
+            print("deleted");
         except:
             db.close()
             return 400
         db.close()
-        return 200
+        return 200 
 
+    # Check if QR code is already scanned
     # If the user has not subscribed himself to the event and both the user and the event exists the user is automaticly subscribed to the event.
     def isScanned(eventId, personId):
         db = Session()
@@ -221,6 +282,12 @@ class Persister():
             return participants
         else:
             return {}
+
+    def getParticepant(eventId, personId):
+        db = Session()
+        participant = db.query(Particepant).filter(Particepant.person_id == personId).filter(Particepant.event_id == eventId).first()
+        db.close()
+        return participant
 
     # Marks the particepant entry as scannend and adds a point to the user account
     def updateParticepantInfo(event_id, person_id):
@@ -378,7 +445,6 @@ class Persister():
                     eventsByEnd = db.query(Event).filter(extract('month', Event.end) == monthNumber).all()
 
         for event in eventsByBegin:
-
             if event.id not in returnData:
                 eventEntry = {}
                 person = db.query(Person).filter(Person.wordpressKey == event.leader).first()
@@ -510,7 +576,6 @@ class Persister():
                 return 400
             else:
                 person.password = newPassword
-
                 db.commit()
                 db.close()
                 return 200
@@ -646,6 +711,14 @@ class Persister():
         else:
             return 400
 
+    def getDescription(id):
+        db = Session()
+
+        if db.query(Person).filter(Person.wordpressKey == id).count():
+            bio = db.query(Person.biography).filter(Person.wordpressKey == id).first()
+            db.close()
+            return bio
+
     def getAllEvents():
         db = Session()
         if db.query(Event).count():
@@ -665,17 +738,6 @@ class Persister():
         else:
             return {}
 
-    def getAllNewsItems():
-        db = Session()
-
-        if db.query(Content).count():
-            news = db.query(Content).order_by(Content.created).all()
-            db.close()
-            return news
-        else:
-            db.close()
-            return {}
-
     def getAllSubs(id):
         db = Session()
 
@@ -692,6 +754,16 @@ class Persister():
             db.close()
             return {}
 
+    def getAllNewsItems():
+        db = Session()
+
+        if db.query(Content).count():
+            news = db.query(Content).order_by(Content.created).all()
+            db.close()
+            return news
+        else:
+            return {}
+        
     def getAllSubbedEvents(eventId):
         db = Session()
 
@@ -704,4 +776,12 @@ class Persister():
         return results
 
 
+    def getEventName(item):
+        db = Session()
+
+        eventNames = db.query(Event.name).filter(Event.id == item).all()
+        db.close()
+        return eventNames
+
 Base.metadata.create_all(conn)
+

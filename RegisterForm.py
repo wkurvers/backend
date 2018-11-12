@@ -81,6 +81,8 @@ def registerSubmit(form, clearance):
             profilePhoto=form.get('img')
         )
         return Persister.persist_object(person)
+    else:
+        return None
 
 def registerFacebookUser(form):
     person = Person(
@@ -94,3 +96,4 @@ def registerFacebookUser(form):
         authenticated=False
     )
     return Persister.persist_object(person)
+
