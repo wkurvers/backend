@@ -355,7 +355,7 @@ def searchEvent():
 def createNewsItem():
     data = requests.get("http://gromdroid.nl/bslim/wp-json/wp/v2/posts/" + request.args.get("id")).json()
     soup = BSHTML(data["content"]["rendered"])
-    images = soup.findAll('img')
+    images = soup.findAll('video')
     img = " "
     for image in images:
         img = image['src']
@@ -374,6 +374,25 @@ def createNewsItem():
     return jsonify({"responseCode": UserApi.createNewsItem(data["title"]["rendered"],
                                                            data["content"]["rendered"],
                                                            img)})
+
+
+@app.route('/api/createNewsItemApp', methods=['POST'])
+def createNewsItemApp():
+    data = request.get_json()
+    apiKey = "YTFkZGY1OGUtNGM5NC00ODdmLWJmN2QtNjMxYzNjMzk0MWJl"
+    appId = "893db161-0c60-438b-af84-8520b89c6d93"
+    header = {"Content-Type": "application/json; charset=utf-8",
+              "Authorization": "Basic " + apiKey}
+
+    payload = {"app_id": appId,
+               "included_segments": ["All"],
+               "contents": {"en": "Nieuws van bslim"},
+               "headings": {"en": data.get('title')}}
+
+    # req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=json.dumps(payload))
+    return jsonify({"responseCode": UserApi.createNewsItem(data["title"],
+                                                           data["content"],
+                                                           data["img"])})
 
 
 # searches through all the news items in the db on title and created date
